@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crea tu SuperApp de Viaje</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&family=Fraunces:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent-hover: #0ea5e9;
+      --border: #334155;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 2rem 1rem;
+      display: flex;
+      justify-content: center;
+    }
+    .container { max-width: 680px; width: 100%; }
+    header { text-align: center; margin-bottom: 2.5rem; }
+    h1 { font-family: 'Fraunces', serif; font-size: 2.2rem; color: #fff; margin-bottom: 0.5rem; }
+    p.subtitle { color: var(--text-muted); font-size: 1.05rem; }
+    .steps { display: flex; flex-direction: column; gap: 1.5rem; }
+    .step-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.5rem;
+      display: flex;
+      gap: 1.25rem;
+      align-items: flex-start;
+    }
+    .step-num {
+      background: var(--accent);
+      color: #0f172a;
+      font-weight: 700;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .step-content h2 { font-size: 1.2rem; margin-bottom: 0.35rem; }
+    .step-content p { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1rem; }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--accent);
+      color: #0f172a;
+      padding: 0.6rem 1.2rem;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.9rem;
+      transition: background 0.2s;
+    }
+    .btn:hover { background: var(--accent-hover); }
+    .code-badge {
+      background: #090d16;
+      border: 1px solid var(--border);
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-family: monospace;
+      color: var(--accent);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Publica tu Guía de Viaje</h1>
+      <p class="subtitle">Convierte tus notas de viaje en una SuperApp interactiva en 3 sencillos pasos.</p>
+    </header>
+
+    <div class="steps">
+      <!-- Paso 1: Gem de Gemini -->
+      <div class="step-card">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h2>Genera el archivo con el Gem</h2>
+          <p>Entra en nuestro Gem de Gemini, pega tu itinerario o notas y pídele que genere la SuperApp en HTML autocontenido.</p>
+          <!-- Sustituye este enlace por la URL real de tu Gem -->
+          <a href="https://gemini.google.com/gems" target="_blank" rel="noopener" class="btn">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> Abrir Gem de Viajes
+          </a>
+        </div>
+      </div>
+
+      <!-- Paso 2: Subir a GitHub -->
+      <div class="step-card">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h2>Sube el HTML al repositorio</h2>
+          <p>Guarda el código generado con el nombre de tu destino (por ejemplo <span class="code-badge">georgia.html</span>) y súbelo al repositorio mediante un Pull Request o commit.</p>
+          <!-- Sustituye este enlace por la URL de tu repositorio -->
+          <a href="https://github.com/TU_USUARIO/TU_REPOSITORIO" target="_blank" rel="noopener" class="btn">
+            <i class="fa-brands fa-github"></i> Ir al Repositorio
+          </a>
+        </div>
+      </div>
+
+      <!-- Paso 3: Acceso Directo -->
+      <div class="step-card">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h2>¡Listo para usar!</h2>
+          <p>En cuanto se apruebe el archivo, tu guía estará online al instante en:</p>
+          <p><span class="code-badge">tudominio.com/nombre-del-archivo</span></p>
+          <p style="margin-top: 0.5rem;">Ábrela desde el navegador de tu móvil y pulsa <strong>"Añadir a la pantalla de inicio"</strong> para usarla como una app nativa durante el viaje.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
