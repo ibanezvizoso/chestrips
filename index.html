@@ -2,589 +2,386 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>ChestRips • Tu SuperApp de Viaje Autocontenida</title>
-  
-  <!-- Tipografía de élite: Fraunces (editorial), Plus Jakarta Sans (UI) y JetBrains Mono (código/rutas) -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ChesTrips · Publica tu Web/App de Viaje</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  
-  <!-- Iconos FontAwesome 6 -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     :root {
-      --bg-dark: #07090e;
-      --card-bg: rgba(16, 23, 39, 0.75);
-      --card-hover: rgba(22, 33, 56, 0.85);
-      --border: rgba(255, 255, 255, 0.08);
-      --border-focus: rgba(56, 189, 248, 0.4);
-      --accent: #38bdf8;
-      --accent-gradient: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%);
-      --accent-glow: rgba(56, 189, 248, 0.15);
+      --bg: #090d16;
+      --card-bg: #131c2e;
+      --card-border: #1e2d48;
       --text: #f8fafc;
       --text-muted: #94a3b8;
-      --text-dim: #64748b;
-      --radius-lg: 20px;
-      --radius-md: 12px;
-      --radius-sm: 8px;
+      --accent: #38bdf8;
+      --accent-hover: #0ea5e9;
+      --accent-glow: rgba(56, 189, 248, 0.15);
+      --warning-bg: rgba(245, 158, 11, 0.08);
+      --warning-border: rgba(245, 158, 11, 0.25);
+      --warning-text: #fbbf24;
+      --border: #22324f;
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      -webkit-tap-highlight-color: transparent;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-      background-color: var(--bg-dark);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: var(--bg);
       color: var(--text);
       line-height: 1.6;
-      min-height: 100vh;
+      padding: 3rem 1.25rem 5rem;
       display: flex;
-      flex-direction: column;
-      align-items: center;
-      position: relative;
-      overflow-x: hidden;
-      padding: 2.5rem 1.25rem 4rem;
+      justify-content: center;
     }
 
-    /* Luces de fondo ambientales (Ambient Glows) */
-    .glow-bg {
-      position: fixed;
-      width: 500px;
-      height: 500px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(56, 189, 248, 0.12) 0%, rgba(129, 140, 248, 0.05) 50%, transparent 70%);
-      top: -120px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 0;
-      pointer-events: none;
-      filter: blur(60px);
-    }
+    .container { max-width: 720px; width: 100%; }
 
-    .glow-bottom {
-      position: fixed;
-      width: 450px;
-      height: 450px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(14, 165, 233, 0.08) 0%, transparent 70%);
-      bottom: -150px;
-      right: -100px;
-      z-index: 0;
-      pointer-events: none;
-      filter: blur(80px);
-    }
-
-    .wrapper {
-      width: 100%;
-      max-width: 720px;
-      z-index: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 2.5rem;
-    }
-
-    /* Cabecera / Hero */
-    header {
-      text-align: center;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 1rem;
-      padding-top: 1rem;
-    }
-
-    .badge {
+    /* Header y Badges */
+    header { text-align: center; margin-bottom: 3rem; }
+    
+    .brand-badge {
       display: inline-flex;
       align-items: center;
       gap: 0.5rem;
-      background: rgba(56, 189, 248, 0.1);
-      border: 1px solid rgba(56, 189, 248, 0.25);
-      padding: 0.35rem 0.9rem;
-      border-radius: 100px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      padding: 0.35rem 0.85rem;
+      border-radius: 999px;
       font-size: 0.8rem;
       font-weight: 600;
       color: var(--accent);
-      letter-spacing: 0.02em;
+      margin-bottom: 1.25rem;
+    }
+
+    .brand-badge .pill {
+      background: var(--accent);
+      color: #090d16;
+      font-size: 0.7rem;
+      padding: 0.1rem 0.45rem;
+      border-radius: 999px;
       text-transform: uppercase;
-    }
-
-    .badge i {
-      font-size: 0.75rem;
-      animation: pulse 2s infinite ease-in-out;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 0.6; transform: scale(0.95); }
-      50% { opacity: 1; transform: scale(1.1); }
+      font-weight: 700;
     }
 
     h1 {
       font-family: 'Fraunces', serif;
-      font-size: clamp(2.4rem, 6vw, 3.4rem);
-      font-weight: 800;
+      font-size: clamp(2rem, 5vw, 2.75rem);
+      color: #ffffff;
       line-height: 1.15;
-      letter-spacing: -0.02em;
-      background: linear-gradient(180deg, #ffffff 40%, #cbd5e1 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      margin-bottom: 0.75rem;
     }
 
-    .subtitle {
-      font-size: 1.1rem;
+    p.subtitle {
       color: var(--text-muted);
-      max-width: 560px;
-      line-height: 1.6;
+      font-size: 1.05rem;
+      max-width: 580px;
+      margin: 0 auto;
     }
 
-    /* Timeline de pasos */
-    .steps-container {
-      display: flex;
-      flex-direction: column;
-      gap: 1.5rem;
-      position: relative;
-    }
+    /* Steps Layout */
+    .steps { display: flex; flex-direction: column; gap: 1.75rem; }
 
     .step-card {
       background: var(--card-bg);
-      border: 1px solid var(--border);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border-radius: var(--radius-lg);
+      border: 1px solid var(--card-border);
+      border-radius: 18px;
       padding: 1.75rem;
-      display: grid;
-      grid-template-columns: auto 1fr;
+      display: flex;
       gap: 1.5rem;
       align-items: flex-start;
-      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-      position: relative;
-      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
     }
 
-    .step-card::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
-    }
-
-    .step-card:hover {
-      background: var(--card-hover);
-      border-color: rgba(255, 255, 255, 0.15);
-      transform: translateY(-2px);
-      box-shadow: 0 16px 32px -10px rgba(0, 0, 0, 0.5);
-    }
-
-    .step-badge {
-      width: 44px;
-      height: 44px;
-      border-radius: var(--radius-md);
-      background: var(--accent-gradient);
-      color: #07090e;
-      font-family: 'Fraunces', serif;
+    .step-num {
+      background: var(--accent);
+      color: #090d16;
       font-weight: 800;
-      font-size: 1.25rem;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 8px 16px -4px rgba(56, 189, 248, 0.4);
       flex-shrink: 0;
+      font-size: 1.1rem;
+      box-shadow: 0 0 20px var(--accent-glow);
     }
 
-    .step-body {
-      display: flex;
-      flex-direction: column;
-      gap: 0.6rem;
-    }
+    .step-content { flex: 1; }
+    .step-content h2 { font-size: 1.3rem; margin-bottom: 0.4rem; color: #fff; }
+    .step-content p { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1rem; }
 
-    .step-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 0.5rem;
-      flex-wrap: wrap;
-    }
-
-    .step-header h2 {
-      font-size: 1.25rem;
-      font-weight: 700;
-      color: #fff;
-      letter-spacing: -0.01em;
-    }
-
-    .step-tag {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.72rem;
-      padding: 0.2rem 0.55rem;
-      background: rgba(255, 255, 255, 0.06);
+    /* Mini-guía GitHub dentro del paso 2 */
+    .substeps-box {
+      background: rgba(9, 13, 22, 0.7);
       border: 1px solid var(--border);
-      color: var(--text-dim);
-      border-radius: 6px;
+      border-radius: 12px;
+      padding: 1rem 1.25rem;
+      margin: 1rem 0 1.25rem;
+      font-size: 0.9rem;
     }
 
-    .step-body p {
+    .substeps-box ol {
+      padding-left: 1.25rem;
       color: var(--text-muted);
-      font-size: 0.95rem;
-      line-height: 1.55;
     }
 
-    /* Botones CTA */
-    .btn-group {
-      display: flex;
-      gap: 0.75rem;
-      flex-wrap: wrap;
-      margin-top: 0.6rem;
+    .substeps-box li {
+      margin-bottom: 0.45rem;
     }
 
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.55rem;
-      padding: 0.7rem 1.3rem;
-      border-radius: var(--radius-md);
-      font-size: 0.92rem;
-      font-weight: 600;
-      text-decoration: none;
-      transition: all 0.2s ease;
-      cursor: pointer;
-      border: none;
-    }
-
-    .btn-primary {
-      background: var(--accent-gradient);
-      color: #07090e;
-      box-shadow: 0 4px 14px rgba(56, 189, 248, 0.25);
-    }
-
-    .btn-primary:hover {
-      box-shadow: 0 6px 20px rgba(56, 189, 248, 0.4);
-      transform: translateY(-1px);
-      filter: brightness(1.08);
-    }
-
-    .btn-secondary {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid var(--border);
+    .substeps-box li strong {
       color: var(--text);
     }
 
-    .btn-secondary:hover {
-      background: rgba(255, 255, 255, 0.1);
-      border-color: rgba(255, 255, 255, 0.2);
+    .highlight-tip {
+      background: rgba(56, 189, 248, 0.08);
+      border-left: 3px solid var(--accent);
+      padding: 0.75rem 1rem;
+      border-radius: 0 8px 8px 0;
+      margin: 1rem 0;
+      font-size: 0.88rem;
+      color: #e2e8f0;
+    }
+
+    /* Botones */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      background: var(--accent);
+      color: #090d16;
+      padding: 0.65rem 1.35rem;
+      border-radius: 10px;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 0.92rem;
+      transition: all 0.2s ease;
+    }
+
+    .btn:hover {
+      background: var(--accent-hover);
       transform: translateY(-1px);
     }
 
-    /* Bloques de código / badges */
-    .code-chip {
-      display: inline-block;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.85rem;
-      padding: 0.2rem 0.5rem;
+    .code-badge {
+      background: #090d16;
+      border: 1px solid var(--border);
+      padding: 0.2rem 0.55rem;
       border-radius: 6px;
-      background: rgba(0, 0, 0, 0.4);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
       color: var(--accent);
+      font-size: 0.88em;
+      word-break: break-all;
     }
 
-    /* Simulador Interactivo de Destino (Paso 3) */
-    .url-tester {
-      background: rgba(0, 0, 0, 0.35);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-md);
-      padding: 1.1rem;
-      margin-top: 0.75rem;
+    /* Caja de Advertencia y Privacidad */
+    .warning-box {
+      margin-top: 2.5rem;
+      background: var(--warning-bg);
+      border: 1px solid var(--warning-border);
+      border-radius: 16px;
+      padding: 1.5rem;
       display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
+      gap: 1.25rem;
+      align-items: flex-start;
     }
 
-    .input-wrapper {
-      display: flex;
-      align-items: center;
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      padding: 0.4rem 0.8rem;
-      transition: border-color 0.2s;
+    .warning-icon {
+      color: var(--warning-text);
+      font-size: 1.4rem;
+      line-height: 1;
+      margin-top: 0.15rem;
     }
 
-    .input-wrapper:focus-within {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 2px var(--accent-glow);
+    .warning-box h3 {
+      font-size: 1.05rem;
+      color: var(--warning-text);
+      margin-bottom: 0.35rem;
     }
 
-    .prefix {
-      font-family: 'JetBrains Mono', monospace;
-      color: var(--text-dim);
+    .warning-box p {
       font-size: 0.88rem;
-      user-select: none;
+      color: #cbd5e1;
+      line-height: 1.55;
     }
 
-    .url-input {
-      background: transparent;
-      border: none;
-      outline: none;
-      color: var(--accent);
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.92rem;
+    .warning-box .disclaimer {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 0.6rem;
+      border-top: 1px solid rgba(245, 158, 11, 0.15);
+      padding-top: 0.6rem;
+    }
+
+    /* Sección Técnica / Arquitectura */
+    .architecture-section {
+      margin-top: 3.5rem;
+      border-top: 1px dashed var(--border);
+      padding-top: 2.5rem;
+    }
+
+    .architecture-section summary {
+      cursor: pointer;
+      font-size: 0.95rem;
       font-weight: 600;
-      width: 100%;
-      padding-left: 0.1rem;
-    }
-
-    .test-actions {
-      display: flex;
+      color: var(--text-muted);
+      display: inline-flex;
       align-items: center;
-      justify-content: space-between;
       gap: 0.5rem;
-      flex-wrap: wrap;
-    }
-
-    .helper-text {
-      font-size: 0.82rem;
-      color: var(--text-dim);
-    }
-
-    /* Ventajas / Features Grid */
-    .features {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1rem;
-      margin-top: 0.5rem;
-    }
-
-    .feat-card {
-      background: rgba(16, 23, 39, 0.45);
-      border: 1px solid var(--border);
-      padding: 1.25rem;
-      border-radius: var(--radius-md);
-      display: flex;
-      flex-direction: column;
-      gap: 0.4rem;
-    }
-
-    .feat-card i {
-      font-size: 1.25rem;
-      color: var(--accent);
-      margin-bottom: 0.3rem;
-    }
-
-    .feat-card h3 {
-      font-size: 0.98rem;
-      color: #fff;
-    }
-
-    .feat-card p {
-      font-size: 0.84rem;
-      color: var(--text-muted);
-      line-height: 1.45;
-    }
-
-    /* Footer */
-    footer {
-      text-align: center;
-      margin-top: 1rem;
-      padding-top: 2rem;
-      border-top: 1px solid var(--border);
-      display: flex;
-      flex-direction: column;
-      gap: 0.4rem;
-    }
-
-    footer p {
-      font-size: 0.85rem;
-      color: var(--text-dim);
-    }
-
-    footer a {
-      color: var(--text-muted);
-      text-decoration: none;
+      user-select: none;
       transition: color 0.2s;
     }
 
-    footer a:hover {
+    .architecture-section summary:hover {
       color: var(--accent);
     }
 
-    /* Responsivo */
+    .arch-content {
+      margin-top: 1.25rem;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.25rem 1.5rem;
+      font-size: 0.88rem;
+      color: var(--text-muted);
+    }
+
+    .arch-flow {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: center;
+      margin: 1rem 0;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .arch-node {
+      background: #090d16;
+      border: 1px solid var(--border);
+      padding: 0.35rem 0.75rem;
+      border-radius: 8px;
+      color: #e2e8f0;
+    }
+
+    .arch-arrow { color: var(--accent); }
+
     @media (max-width: 600px) {
-      .step-card {
-        grid-template-columns: 1fr;
-        gap: 1rem;
-        padding: 1.35rem;
-      }
-      .step-badge {
-        width: 36px;
-        height: 36px;
-        font-size: 1.1rem;
-      }
-      .btn {
-        width: 100%;
-        justify-content: center;
-      }
+      body { padding: 2rem 1rem; }
+      .step-card { flex-direction: column; gap: 1rem; padding: 1.25rem; }
+      .step-num { width: 34px; height: 34px; font-size: 0.95rem; }
+      .arch-flow { flex-direction: column; align-items: flex-start; }
+      .arch-arrow { transform: rotate(90deg); margin: -0.25rem 0 0 0.5rem; }
     }
   </style>
 </head>
 <body>
-
-  <!-- Elementos de luz ambiental -->
-  <div class="glow-bg"></div>
-  <div class="glow-bottom"></div>
-
-  <div class="wrapper">
-    
-    <!-- Cabecera -->
+  <div class="container">
     <header>
-      <div class="badge">
-        <i class="fa-solid fa-sparkles"></i> ChestRips Core • Gemini AI + Cloudflare Pages
+      <div class="brand-badge">
+        <span>ChesTrips Engine</span>
+        <span class="pill">Beta · 100% Gratis</span>
       </div>
-      <h1>Crea tu SuperApp de Viaje</h1>
-      <p class="subtitle">
-        Transforma cualquier documento o notas en una aplicación interactiva, moderna y 100% autocontenida para la pantalla de inicio de tu teléfono.
-      </p>
+      <h1>Publica tu Web/App de Viaje</h1>
+      <p class="subtitle">Convierte tus notas de viaje en una web/app interactiva y lista para usar en el móvil en 3 sencillos pasos.</p>
     </header>
 
-    <!-- Pasos -->
-    <main class="steps-container">
-
-      <!-- PASO 1 -->
-      <article class="step-card">
-        <div class="step-badge">1</div>
-        <div class="step-body">
-          <div class="step-header">
-            <h2>Genera la App con Gemini</h2>
-            <span class="step-tag">Gem Inteligente</span>
-          </div>
-          <p>
-            Abre nuestro Gem especializado, sube tu documento de notas o pega tus vuelos, alojamientos y actividades. El modelo creará el código de la SuperApp en un único bloque HTML.
-          </p>
-          <div class="btn-group">
-            <a href="https://gemini.google.com/gem/1nWqEkVHPldZ1yWerJV34-7_Wou2nYKB6?usp=sharing" target="_blank" rel="noopener" class="btn btn-primary">
-              <i class="fa-solid fa-wand-magic-sparkles"></i> Abrir Gem de Viajes
-            </a>
-          </div>
+    <div class="steps">
+      <!-- Paso 1: Gem de Gemini -->
+      <div class="step-card">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h2>Genera el archivo con ChesTrips Gem</h2>
+          <p>Abre nuestro Gem de Gemini, pega tu itinerario, hoteles, enlaces o reservas y pídele que compile tu <strong>web/app de viaje en un único archivo HTML</strong> autocontenido.</p>
+          <!-- Sustituye con el enlace a tu Gem -->
+          <a href="https://gemini.google.com/gems" target="_blank" rel="noopener" class="btn">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> Abrir ChesTrips Gem
+          </a>
         </div>
-      </article>
+      </div>
 
-      <!-- PASO 2 -->
-      <article class="step-card">
-        <div class="step-badge">2</div>
-        <div class="step-body">
-          <div class="step-header">
-            <h2>Sube el HTML al Repositorio</h2>
-            <span class="step-tag">GitHub Pages Sync</span>
+      <!-- Paso 2: Subir a GitHub -->
+      <div class="step-card">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h2>Sube el código a GitHub</h2>
+          <p>No necesitas usar la consola ni instalar programas. Puedes hacerlo directamente desde el navegador:</p>
+
+          <div class="substeps-box">
+            <ol>
+              <li>Entra al repositorio y haz clic en <strong>"Add file"</strong> → <strong>"Create new file"</strong> (o "Upload files").</li>
+              <li>Pega el código HTML completo que te entregó el Gem.</li>
+              <li>Escribe el nombre del archivo en la casilla superior (usa nombres únicos).</li>
+              <li>Abajo, haz clic en <strong>"Commit changes"</strong> (o "Propose changes" si es un Pull Request).</li>
+            </ol>
           </div>
-          <p>
-            Copia el código y guárdalo con el nombre de tu destino en minúsculas (ej: <span class="code-chip">georgia.html</span> o <span class="code-chip">vietnam.html</span>). Súbelo a la raíz del repositorio mediante un commit o Pull Request.
-          </p>
-          <div class="btn-group">
-            <a href="https://github.com/ibanezvizoso/chestrips" target="_blank" rel="noopener" class="btn btn-secondary">
-              <i class="fa-brands fa-github"></i> Repositorio ibanezvizoso/chestrips
-            </a>
+
+          <div class="highlight-tip">
+            <i class="fa-solid fa-lightbulb" style="color: var(--accent); margin-right: 0.35rem;"></i>
+            <strong>Evita nombres genéricos:</strong> Si lo llamas <span class="code-badge">grecia.html</span> podrías sobreescribir el viaje de otra persona. Usa nombres específicos con vuestros nombres o fechas, por ejemplo: <span class="code-badge">grecia-antonio-y-laura.html</span> o <span class="code-badge">japon-octubre-paco.html</span>.
           </div>
+
+          <!-- Sustituye con la URL de tu repositorio -->
+          <a href="https://github.com/TU_USUARIO/TU_REPOSITORIO" target="_blank" rel="noopener" class="btn">
+            <i class="fa-brands fa-github"></i> Ir al Repositorio en GitHub
+          </a>
         </div>
-      </article>
+      </div>
 
-      <!-- PASO 3 -->
-      <article class="step-card">
-        <div class="step-badge">3</div>
-        <div class="step-body">
-          <div class="step-header">
-            <h2>Accede al Instante</h2>
-            <span class="step-tag">Ruta Limpia Cloudflare</span>
-          </div>
-          <p>
-            Cloudflare Pages detecta el archivo y crea automáticamente la ruta limpia. Puedes probar tu enlace ahora mismo:
+      <!-- Paso 3: Acceso Directo y PWA -->
+      <div class="step-card">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h2>¡Tu web/app lista para el móvil!</h2>
+          <p>Una vez aceptado el archivo en el repositorio, tu guía se publicará en internet en cuestión de segundos en:</p>
+          <p><span class="code-badge">tudominio.com/tu-archivo.html</span></p>
+          <p style="margin-top: 0.75rem;">
+            Ábrela desde Safari o Chrome en tu teléfono y pulsa <strong>"Compartir" → "Añadir a pantalla de inicio"</strong>. Funcionará como una app independiente durante tu viaje, incluso sin cobertura para lo que guardes en memoria.
           </p>
-
-          <!-- Simulador de URL en Vivo -->
-          <div class="url-tester">
-            <div class="input-wrapper">
-              <span class="prefix">https://chestrips.pages.dev/</span>
-              <input type="text" id="trip-input" class="url-input" value="georgia" placeholder="tu-destino" spellcheck="false" autocomplete="off">
-            </div>
-            
-            <div class="test-actions">
-              <span class="helper-text"><i class="fa-solid fa-mobile-screen"></i> Añadir a inicio para experiencia PWA offline</span>
-              <a href="https://chestrips.pages.dev/georgia" id="trip-link" target="_blank" rel="noopener" class="btn btn-primary" style="padding: 0.45rem 1rem; font-size: 0.85rem;">
-                <i class="fa-solid fa-arrow-up-right-from-square"></i> Abrir Viaje
-              </a>
-            </div>
-          </div>
         </div>
-      </article>
-
-    </main>
-
-    <!-- Características de la arquitectura -->
-    <section class="features">
-      <div class="feat-card">
-        <i class="fa-solid fa-bolt"></i>
-        <h3>100% Autocontenido</h3>
-        <p>Sin bases de datos ni Sheets. Toda la lógica, estilo y datos residen en el archivo HTML.</p>
       </div>
-      <div class="feat-card">
-        <i class="fa-solid fa-plane-departure"></i>
-        <h3>Modo Móvil Nativo</h3>
-        <p>Diseñado con dock inferior, modo oscuro y persistencia local sin conexión a internet.</p>
-      </div>
-      <div class="feat-card">
-        <i class="fa-solid fa-shield-halved"></i>
-        <h3>Sin Colisiones</h3>
-        <p>Estilos y funciones encapsuladas bajo namespaces independientes por cada viaje.</p>
-      </div>
-    </section>
+    </div>
 
-    <!-- Pie de página -->
-    <footer>
-      <p>ChestRips • SuperApps de viaje impulsadas por IA</p>
-      <p><a href="https://github.com/ibanezvizoso/chestrips" target="_blank" rel="noopener"><i class="fa-brands fa-github"></i> Código abierto en GitHub</a></p>
-    </footer>
+    <!-- Advertencia de Privacidad y Descargo de Responsabilidad -->
+    <div class="warning-box">
+      <div class="warning-icon">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+      </div>
+      <div>
+        <h3>Aviso de Privacidad y Seguridad</h3>
+        <p>
+          <strong>No incluyas datos confidenciales:</strong> Evita introducir números de pasaporte o DNI, códigos localizadores completos de vuelos (PNR), direcciones personales o datos de pago.
+        </p>
+        <p class="disclaimer">
+          <em>Descargo de responsabilidad:</em> Al tratarse de un repositorio y un despliegue de acceso público, el usuario es el único responsable de la información que decide incluir en el archivo. ChesTrips no se hace responsable de la custodia, difusión o uso indebido de los datos personales publicados por terceros.
+        </p>
+      </div>
+    </div>
 
+    <!-- Sección técnica secundaria: Arquitectura -->
+    <div class="architecture-section">
+      <details>
+        <summary>
+          <i class="fa-solid fa-server"></i> ¿Cómo funciona la arquitectura por dentro?
+        </summary>
+        <div class="arch-content">
+          <p>ChesTrips utiliza un enfoque <strong>GitOps estático serverless</strong> sin base de datos central:</p>
+          <div class="arch-flow">
+            <span class="arch-node"><i class="fa-solid fa-brain"></i> Gemini Gem (Frontend Compiler)</span>
+            <span class="arch-arrow">➔</span>
+            <span class="arch-node"><i class="fa-brands fa-github"></i> GitHub (Storage & Version Control)</span>
+            <span class="arch-arrow">➔</span>
+            <span class="arch-node"><i class="fa-solid fa-bolt"></i> CI/CD Edge Deployment</span>
+            <span class="arch-arrow">➔</span>
+            <span class="arch-node"><i class="fa-solid fa-mobile-screen"></i> PWA Cliente</span>
+          </div>
+          <p>Cada archivo HTML es autónomo: integra sus propios estilos, lógicas interactivas y almacenamiento local en el dispositivo (localStorage). El alojamiento estático distribuye el contenido desde nodos de red cercanos a tu destino para una carga instantánea.</p>
+        </div>
+      </details>
+    </div>
   </div>
-
-  <!-- Lógica de control encapsulada -->
-  <script>
-    (() => {
-      const tripInput = document.getElementById('trip-input');
-      const tripLink = document.getElementById('trip-link');
-
-      function slugify(text) {
-        return text
-          .toString()
-          .toLowerCase()
-          .trim()
-          .normalize('NFD')
-          .replace(/[\u0300-\u036f]/g, '')
-          .replace(/[^a-z0-9-]/g, '')
-          .replace(/\s+/g, '-');
-      }
-
-      function updateTripUrl() {
-        const cleanSlug = slugify(tripInput.value) || 'georgia';
-        const targetUrl = `https://chestrips.pages.dev/${cleanSlug}`;
-        tripLink.href = targetUrl;
-      }
-
-      tripInput.addEventListener('input', (e) => {
-        tripInput.value = slugify(e.target.value);
-        updateTripUrl();
-      });
-
-      tripInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-          tripLink.click();
-        }
-      });
-    })();
-  </script>
 </body>
 </html>
