@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChesTrips - Sri Lanka 2024</title>
+    <!-- FontAwesome & Leaflet CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        :root {
+            --bg-main: #0b0f19;
+            --bg-card: #151c2c;
+            --bg-card-hover: #1e293b;
+            --accent-primary: #10b981;
+            --accent-secondary: #f59e0b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+            --radius: 16px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            padding-bottom: 80px;
+            max-width: 600px;
+            margin: 0 auto;
+            min-height: 100vh;
+        }
+
+        /* Hero Header */
+        .hero {
+            position: relative;
+            background: linear-gradient(180deg, rgba(11,15,25,0.2) 0%, var(--bg-main) 100%), 
+                        url('https://images.unsplash.com/photo-1546708973-b339540b5162?auto=format&fit=crop&w=800&q=80') center/cover;
+            height: 220px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .hero-badge {
+            align-self: flex-start;
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--accent-primary);
+            border: 1px solid var(--accent-primary);
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            backdrop-filter: blur(4px);
+        }
+
+        .hero h1 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+        }
+
+        .hero p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 4px;
+        }
+
+        /* Navigation Tabs */
+        .nav-tabs {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 600px;
+            background: rgba(21, 28, 44, 0.95);
+            backdrop-filter: blur(12px);
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 0;
+            border-top: 1px solid var(--border-color);
+            z-index: 1000;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            width: 25%;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn i {
+            font-size: 1.2rem;
+        }
+
+        .tab-btn.active {
+            color: var(--accent-primary);
+        }
+
+        /* Main Content Container */
+        .content {
+            padding: 20px;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Section Titles */
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        /* Timeline / Itinerary */
+        .day-card {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 16px;
+            margin-bottom: 14px;
+            border: 1px solid var(--border-color);
+            transition: border-color 0.2s;
+        }
+
+        .day-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .day-number {
+            background: var(--accent-secondary);
+            color: #000;
+            font-weight: 800;
+            font-size: 0.75rem;
+            padding: 3px 8px;
+            border-radius: 8px;
+        }
+
+        .day-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .day-desc {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        .day-tags {
+            display: flex;
+            gap: 6px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            font-size: 0.7rem;
+            background: rgba(255,255,255,0.05);
+            padding: 3px 8px;
+            border-radius: 6px;
+            color: var(--text-muted);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        /* Map Section */
+        #map {
+            height: 380px;
+            width: 100%;
+            border-radius: var(--radius);
+            border: 1px solid var(--border-color);
+            z-index: 1;
+        }
+
+        /* Checklist */
+        .checklist-group {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 16px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 16px;
+        }
+
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            cursor: pointer;
+        }
+
+        .checklist-item:last-child {
+            border-bottom: none;
+        }
+
+        .checklist-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--accent-primary);
+            cursor: pointer;
+        }
+
+        .checklist-item.completed label {
+            text-decoration: line-through;
+            color: var(--text-muted);
+        }
+
+        .add-item-form {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .add-item-form input {
+            flex: 1;
+            background: var(--bg-main);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 10px 14px;
+            border-radius: 8px;
+            outline: none;
+        }
+
+        .add-item-form button {
+            background: var(--accent-primary);
+            color: #000;
+            border: none;
+            padding: 0 16px;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        /* Notes Box */
+        .notes-area {
+            width: 100%;
+            height: 250px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            color: var(--text-main);
+            padding: 16px;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            resize: none;
+            outline: none;
+        }
+
+        .notes-area:focus {
+            border-color: var(--accent-primary);
+        }
+
+        .save-status {
+            font-size: 0.75rem;
+            color: var(--accent-primary);
+            margin-top: 6px;
+            text-align: right;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header / Hero Section -->
+    <div class="hero">
+        <span class="hero-badge"><i class="fa-solid fa-plane"></i> ChesTrips Engine</span>
+        <h1>Sri Lanka 🇱🇰</h1>
+        <p><i class="fa-regular fa-calendar"></i> 1 Oct - 10 Oct (10 Días)</p>
+    </div>
+
+    <!-- Main Content Tab Container -->
+    <div class="content">
+
+        <!-- TAB 1: ITINERARIO -->
+        <div id="tab-itinerary" class="tab-content active">
+            <div class="section-title">
+                <span>Ruta del Viaje</span>
+                <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: normal;">10 Paradas</span>
+            </div>
+
+            <div class="day-card">
+                <div class="day-header">
+                    <span class="day-title">Llegada & Negombo</span>
+                    <span class="day-number">Día 1</span>
+                </div>
+                <div class="day-desc">Aterrizaje en el aeropuerto de Colombo (CMB), traslado al pueblo pesquero de Negombo para descansar.</div>
+                <div class="day-tags"><span class="tag">Llegada</span><span class="tag">Playa</span></div>
+            </div>
+
+            <div class="day-card">
+                <div class="day-header">
+                    <span class="day-title">Negombo a Sigiriya</span>
+                    <span class="day-number">Día 2</span>
+                </div>
+                <div class="day-desc">Ruta hacia el triángulo cultural. Visita al Templo de la Cueva de Dambulla en el camino.</div>
+                <div class="day-tags"><span class="tag">Templos</span><span class="tag">Cultura</span></div>
+            </div>
+
+            <div class="day-card">
+                <div class="day-header">
+                    <span class="day-title">Sigiriya & Polonnaruwa</span>
+                    <span class="day-number">Día 3</span>
+                </div>
+                <div class="day-desc">Ascenso a la Fortaleza de la Roca del León por la mañana. Por la tarde, ruinas antiguas de Polonnaruwa.</div>
+                <div class="day-tags"><span class="tag">Roca del León</span><span class="tag">Ruinas</span></div>
+            </div>
+
+            <div class="day-card">
+                <div class="day-header">
+                    <span class="day-title">Sigiriya a Kandy</span>
+                    <span class="day-number">Día 4</span>
+                </div>
+                <div class="day-desc">Camino a Kandy. Jardín de especias en Matale y visita al sagrado Templo del Diente de Buda.</div>
+                <div class="day-tags"><span class="tag">Kandy</span><span class="tag">Espiritualidad</span></div>
+            </div>
+
+            <div class="day-card">
+                <div class="day-header">
+                    <span class="day-title">Tren Panorámico a Nuwara Eliya</span>
+                    <span class="day-number">Día 5</span>
+                </div>
+                <div class="day-desc">Famoso trayecto en tren entre plantaciones de té verdes. Visita a la "Little England" de Sri Lanka.</div>
+                <div class="day-tags"><span class="tag">Tren Escénico</span><span class="tag">Plantaciones Té</span></div>
+            </div>
+
+            <div class="day-card">
+                <div class="day-header">
+                    <span class="day-title">Ella & Nine Arches Bridge</span>
+                    <span class="day-number">Día 6</span>
+                </div>
+                <div class="day-desc">Senderismo a Little Adam's Peak y fotografía en el célebre Puente de los Nueve Arcos.</div>
+                <div class="day-tags"><span class="tag">Naturaleza</span><span class="tag">Trekking</span></div>
+            </div>
+
+            <div class="day-card">
+                <div class="day-header">
+                    <span class="day-title">Safári en Yala</span>
+                    <span class="day-number">Día 7</span>
+                </div>
+                <div class="day-desc">Descenso al Parque Nacional de Yala para safari 4x4 en busca de leopardos, elefantes y aves.</div>
+                <div class="day-tags"><span class="tag">Safari</span><span class="tag">Leopardos</span></div>
+            </div>
+
+            <div class="day-card">
+                <div class="day-header">
+                    <span class="day-title">Fuerte de Galle & Mirissa</span>
+                    <span class="day-number">Día 8</span>
+                </div>
+                <div class="day-desc">Ruta costera hacia el sur. Paseo por la fortaleza colonial fortificada de Galle al atardecer.</div>
+                <div class="day-tags"><span class="tag">Historia</span><span class="tag">Costa Sur</span></div>
+            </div>
+
+            <div class="day-card">
+                <div class="day-header">
+                    <span class="day-title">Costa Sur / Relax en la Playa</span>
+                    <span class="day-number">Día 9</span>
+                </div>
+                <div class="day-desc">Día libre para disfrutar de Mirissa o Unawatuna, cocos frescos y avistamiento de ballenas opción.</div>
+                <div class="day-tags"><span class="tag">Relax</span><span class="tag">Playa</span></div>
+            </div>
+
+            <div class="day-card">
+                <div class="day-header">
+                    <span class="day-title">Colombo & Vuelo de Regreso</span>
+                    <span class="day-number">Día 10</span>
+                </div>
+                <div class="day-desc">Traslado por la autopista a Colombo. Compras de recuerdos de última hora y vuelo de salida.</div>
+                <div class="day-tags"><span class="tag">Fin del Viaje</span></div>
+            </div>
+        </div>
+
+        <!-- TAB 2: MAPA -->
+        <div id="tab-map" class="tab-content">
+            <div class="section-title">Ruta Interactiva</div>
+            <div id="map"></div>
+        </div>
+
+        <!-- TAB 3: EQUIPAJE -->
+        <div id="tab-checklist" class="tab-content">
+            <div class="section-title">Checklist de Equipaje</div>
+            <div class="checklist-group">
+                <div id="checklist-items">
+                    <!-- Dynamic items rendered here -->
+                </div>
+                <form class="add-item-form" id="add-item-form">
+                    <input type="text" id="new-item-input" placeholder="Añadir objeto..." required>
+                    <button type="submit"><i class="fa-solid fa-plus"></i></button>
+                </form>
+            </div>
+        </div>
+
+        <!-- TAB 4: NOTAS -->
+        <div id="tab-notes" class="tab-content">
+            <div class="section-title">Notas de Viaje</div>
+            <textarea class="notes-area" id="notes-input" placeholder="Escribe aquí datos de vuelo, reservas, ideas, lugares que probar..."></textarea>
+            <div class="save-status" id="save-status"><i class="fa-solid fa-check"></i> Guardado en dispositivo</div>
+        </div>
+
+    </div>
+
+    <!-- Sticky Navigation Bar -->
+    <nav class="nav-tabs">
+        <button class="tab-btn active" onclick="switchTab('tab-itinerary', this)">
+            <i class="fa-solid fa-route"></i>
+            <span>Itinerario</span>
+        </button>
+        <button class="tab-btn" onclick="switchTab('tab-map', this)">
+            <i class="fa-solid fa-map-location-dot"></i>
+            <span>Mapa</span>
+        </button>
+        <button class="tab-btn" onclick="switchTab('tab-checklist', this)">
+            <i class="fa-solid fa-list-check"></i>
+            <span>Checklist</span>
+        </button>
+        <button class="tab-btn" onclick="switchTab('tab-notes', this)">
+            <i class="fa-solid fa-note-sticky"></i>
+            <span>Notas</span>
+        </button>
+    </nav>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // Tab Navigation
+        function switchTab(tabId, btn) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            
+            document.getElementById(tabId).classList.add('active');
+            btn.classList.add('active');
+
+            if (tabId === 'tab-map') {
+                setTimeout(() => { map.invalidateSize(); }, 200);
+            }
+        }
+
+        // Map Logic (Leaflet)
+        const stops = [
+            { name: "1. Negombo", lat: 7.2083, lng: 79.8358 },
+            { name: "2. Dambulla & Sigiriya", lat: 7.9570, lng: 80.7603 },
+            { name: "3. Polonnaruwa", lat: 7.9403, lng: 81.0188 },
+            { name: "4. Kandy", lat: 7.2906, lng: 80.6337 },
+            { name: "5. Nuwara Eliya", lat: 6.9497, lng: 80.7891 },
+            { name: "6. Ella", lat: 6.8667, lng: 81.0466 },
+            { name: "7. Yala National Park", lat: 6.3725, lng: 81.5185 },
+            { name: "8. Galle", lat: 6.0535, lng: 80.2210 },
+            { name: "9. Mirissa", lat: 5.9483, lng: 80.4716 },
+            { name: "10. Colombo", lat: 6.9271, lng: 79.8612 }
+        ];
+
+        const map = L.map('map', { zoomControl: false }).setView([7.8731, 80.7718], 7);
+
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; OpenStreetMap &copy; CARTO',
+            maxZoom: 18
+        }).addTo(map);
+
+        const latLngs = stops.map(s => [s.lat, s.lng]);
+        
+        // Draw path
+        L.polyline(latLngs, {
+            color: '#10b981',
+            weight: 3,
+            dashArray: '5, 8'
+        }).addTo(map);
+
+        // Add Markers
+        stops.forEach((stop) => {
+            L.circleMarker([stop.lat, stop.lng], {
+                radius: 6,
+                fillColor: "#f59e0b",
+                color: "#ffffff",
+                weight: 2,
+                opacity: 1,
+                fillOpacity: 0.9
+            }).addTo(map).bindPopup(`<b>${stop.name}</b>`);
+        });
+
+        // Checklist Logic (localStorage)
+        const defaultChecklist = [
+            { text: "Pasaporte (mínimo 6 meses de validez)", checked: false },
+            { text: "Visado ETA de Sri Lanka impreso", checked: false },
+            { text: "Adaptador de enchufe tipo G", checked: false },
+            { text: "Repelente de mosquitos fuerte", checked: false },
+            { text: "Protector solar y gafas de sol", checked: false },
+            { text: "Ropa modesta para entrar a templos (hombros y rodillas cubiertas)", checked: false },
+            { text: "Calzado cómodo / Senderismo", checked: false },
+            { text: "Chubasquero ligero o impermeable", checked: false }
+        ];
+
+        function getChecklist() {
+            const saved = localStorage.getItem('chestrips_srilanka_checklist');
+            return saved ? JSON.parse(saved) : defaultChecklist;
+        }
+
+        function saveChecklist(items) {
+            localStorage.setItem('chestrips_srilanka_checklist', JSON.stringify(items));
+        }
+
+        function renderChecklist() {
+            const items = getChecklist();
+            const container = document.getElementById('checklist-items');
+            container.innerHTML = '';
+
+            items.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = `checklist-item ${item.checked ? 'completed' : ''}`;
+                div.innerHTML = `
+                    <input type="checkbox" id="chk-${index}" ${item.checked ? 'checked' : ''} onchange="toggleCheck(${index})">
+                    <label for="chk-${index}" style="flex:1; cursor:pointer; font-size:0.9rem;">${item.text}</label>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function toggleCheck(index) {
+            const items = getChecklist();
+            items[index].checked = !items[index].checked;
+            saveChecklist(items);
+            renderChecklist();
+        }
+
+        document.getElementById('add-item-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const input = document.getElementById('new-item-input');
+            const text = input.value.trim();
+            if (text) {
+                const items = getChecklist();
+                items.push({ text, checked: false });
+                saveChecklist(items);
+                renderChecklist();
+                input.value = '';
+            }
+        });
+
+        // Notes Logic (localStorage)
+        const notesInput = document.getElementById('notes-input');
+        const saveStatus = document.getElementById('save-status');
+
+        notesInput.value = localStorage.getItem('chestrips_srilanka_notes') || '';
+
+        let timeout = null;
+        notesInput.addEventListener('input', () => {
+            saveStatus.style.opacity = '0';
+            clearTimeout(timeout);
+            timeout = setTimeout(() => {
+                localStorage.setItem('chestrips_srilanka_notes', notesInput.value);
+                saveStatus.style.opacity = '1';
+                setTimeout(() => { saveStatus.style.opacity = '0'; }, 2000);
+            }, 600);
+        });
+
+        // Init
+        renderChecklist();
+    </script>
+</body>
+</html>
