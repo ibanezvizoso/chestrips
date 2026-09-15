@@ -32,107 +32,144 @@ export async function onRequestPost(context) {
 
     // 2. Prompt de extracción enciclopédica y estructurada
     const systemPrompt = `
-Eres ChesTrips Knowledge & Travel Engine, un redactor de guías de viaje de élite, historiador y asistente local.
-Tu cometido es transformar las notas del usuario en una enciclopedia viva y práctica de viaje.
-Debes devolver EXCLUSIVAMENTE un objeto JSON estrictamente válido, sin texto adicional, con la siguiente estructura:
+Eres ChesTrips Knowledge & Travel Engine, un redactor de guías de viaje de élite, historiador de campo y asistente local hiperdetallista.
+Tu cometido es transformar las notas del usuario en una enciclopedia interactiva y práctica de viaje con acabado editorial premium.
+Debes devolver EXCLUSIVAMENTE un objeto JSON estrictamente válido, sin markdown (\`\`\`json) ni texto exterior.
 
+ESTRUCTURA DEL JSON:
 {
   "tripTitle": "Título evocador del viaje",
-  "dates": "Rango de fechas legible (ej: 19 Sep – 02 Oct)",
-  "startDateISO": "YYYY-MM-DD del día 1 (para cuenta atrás)",
-  "badgeText": "Ej: Vietnam · 14 Días · Ruta Imperial",
-  "stats": { "days": 14, "cities": 6, "hotels": 5, "flights": 2 },
+  "dates": "Rango de fechas legible (ej: 08 Nov – 24 Nov · 17 días)",
+  "startDateISO": "YYYY-MM-DD del día 1",
+  "badgeText": "Ej: Japón · 17 Días · Ruta Momiji & Alpes",
+  "stats": { "days": 17, "cities": 8, "hotels": 4, "flights": 4 },
+  "flights": [
+    {
+      "locator": "MKZQD",
+      "code": "IB0462",
+      "route": "LCG → MAD",
+      "time": "Vie 08 Nov · 21:40 - 23:00"
+    }
+  ],
+  "quickFacts": [
+    { "icon": "fa-train", "title": "Transporte Clave", "desc": "Regla de oro sobre pases, tarjetas IC o trenes de alta velocidad." },
+    { "icon": "fa-credit-card", "title": "Pagos & Dinero", "desc": "Cajero sin comisiones, aceptación de tarjeta o necesidad de efectivo." },
+    { "icon": "fa-plug", "title": "Enchufes & Red", "desc": "Tipo de clavija, voltaje y necesidad de eSIM o Pocket WiFi." },
+    { "icon": "fa-trash-can", "title": "Costumbre Urbana", "desc": "Dato práctico sobre papeleras, ruido en transporte o calzado." }
+  ],
   "currency": {
-    "code": "VND",
-    "symbol": "₫",
-    "rateToEUR": 27000,
-    "quickChips": [50000, 100000, 200000, 500000, 1000000]
+    "code": "JPY",
+    "symbol": "¥",
+    "rateToEUR": 164.5,
+    "quickChips": [500, 1000, 3000, 5000, 10000]
   },
   "routeThread": [
-    { "name": "Hanoi", "icon": "fa-landmark", "query": "hanoi" },
-    { "name": "Ha Long", "icon": "fa-ship", "query": "ha long" }
+    { "name": "Osaka", "icon": "fa-building", "query": "osaka" },
+    { "name": "Kioto", "icon": "fa-torii-gate", "query": "kioto" }
   ],
   "weatherTable": [
-    { "region": "Norte (Hanoi/Sapa)", "temp": "18–26°C", "desc": "Clima fresco en montaña, brisas agradables." }
+    { "region": "Kansai (Osaka/Kioto)", "temp": "9–18°C", "desc": "Clima templado, arces en apogeo otoñal." }
   ],
-  "mapCenter": [16.0544, 107.5],
+  "mapCenter": [35.0, 136.0],
   "mapZoom": 6,
   "days": [
     {
       "day": 1,
-      "dateBadge": "19 SEP",
-      "title": "Llegada y bienvenida",
-      "meta": "Ciudad · Zona · Transporte",
-      "lat": 21.0285,
-      "lng": 105.8542,
-      "hotel": "Nombre Hotel",
+      "dateBadge": "08 NOV",
+      "title": "Salida: Enlace y Vuelo Nocturno",
+      "isSuggestion": false,
+      "meta": "A Coruña · Tránsito · Vuelo",
+      "lat": 43.302,
+      "lng": -8.377,
+      "hotel": "Nombre Hotel o Alojamiento",
       "hotelAddress": "Dirección completa",
-      "hotelMapsUrl": "https://maps.google.com/?q=Nombre+Hotel",
-      "historyContext": "Párrafo breve explicando la historia o relevancia cultural del lugar visitado.",
+      "hotelMapsUrl": "https://maps.google.com/?q=Hotel+Ejemplo",
+      "historyContext": "Contexto histórico real, origen de un templo, leyenda urbana o crónica del shogunato/dinastía local.",
       "steps": [
-        "09:00h: Detalle paso a paso...",
-        "14:00h: Visita cultural con contexto...",
-        "20:00h: Cena y ambiente nocturno..."
+        "21:40h: Salida en el vuelo...",
+        "Detalle secuencial paso a paso con datos concretos..."
       ],
-      "cultureTip": "Norma social o dato cultural relevante para este día.",
-      "practicalTip": "Consejo logístico, horario recomendado o advertencia sobre timos."
+      "cultureTip": "Norma social, leyenda o curiosidad vinculada a este punto.",
+      "practicalTip": "Horario óptimo para evitar colas, dónde comprar billetes o advertencia."
+    }
+  ],
+  "curiosities": [
+    {
+      "title": "Propinas: ¡Nunca las dejes!",
+      "icon": "fa-ban",
+      "desc": "Explicación histórica/social de por qué no se da propina o se considera una ofensa."
+    },
+    {
+      "title": "Costumbres en Baños / Templos",
+      "icon": "fa-hot-tub-person",
+      "desc": "Protocolo específico, uso de calzado, tatuajes o purificación en fuentes temizuya."
     }
   ],
   "etiquette": [
     {
-      "title": "Norma o Protocolo Local",
-      "icon": "fa-handshake",
-      "desc": "Explicación detallada de la costumbre, templos, vestimenta, propinas o transporte."
+      "title": "Reglas en Transporte Público",
+      "icon": "fa-volume-xmark",
+      "desc": "Modo silencio, escaleras mecánicas (diferencias por ciudad) o comida en vagones."
     }
   ],
   "transports": [
     {
-      "date": "Fecha u horario clave",
-      "title": "Tren nocturno / Vuelo / Ferry",
-      "desc": "Detalle del transporte, estación de salida y recomendaciones."
+      "date": "10 NOV · 11:30",
+      "title": "Narita Express (N'EX)",
+      "desc": "Narita Airport → Tokio. Asientos reservados y canje de billetes."
     }
   ],
   "gourmet": [
     {
-      "dish": "Nombre local auténtico del plato",
-      "desc": "Descripción gastronómica, ingredientes y dónde degustarlo",
-      "city": "Región o ciudad típica"
+      "dish": "Takoyaki",
+      "desc": "Bolas de masa rellenas de pulpo servidas con salsa dulce, mayonesa y katsuobushi.",
+      "city": "Osaka (Dotonbori)",
+      "recommendedSpot": "Acchichi Honpo"
     }
   ],
   "flashcards": [
-    { "category": "Restaurante", "local": "Tính tiền", "phonetic": "Tinh tien", "spanish": "La cuenta, por favor" },
-    { "category": "Taxi", "local": "Bật đồng hồ lên", "phonetic": "Bat dong ho len", "spanish": "Ponga el taxímetro, por favor" },
-    { "category": "Compras", "local": "Bao nhiêu tiền?", "phonetic": "Bao nieu tien?", "spanish": "¿Cuánto cuesta?" }
+    { "category": "Restaurante", "local": "お会計をお願いします", "phonetic": "O-kaikei o-negai shimasu", "spanish": "La cuenta, por favor" },
+    { "category": "Carta", "local": "英語のメニューはありますか？", "phonetic": "Eigo no menyuu wa arimasu ka?", "spanish": "¿Tienen menú en inglés?" },
+    { "category": "Compras", "local": "袋は結構です", "phonetic": "Fukuro wa kekkou desu", "spanish": "Sin bolsa de plástico, gracias" },
+    { "category": "Urgencias", "local": "お手洗いはどこですか？", "phonetic": "O-tearai wa doko desu ka?", "spanish": "¿Dónde está el baño?" },
+    { "category": "Taxi", "local": "駅までお願いします", "phonetic": "Eki made o-negai shimasu", "spanish": "A la estación, por favor" },
+    { "category": "Alergias", "local": "豚肉は入っていますか？", "phonetic": "Butaniku wa haitte imasu ka?", "spanish": "¿Lleva carne de cerdo?" }
   ],
   "quiz": [
     {
-      "question": "Pregunta histórica o de curiosidad sobre el destino",
-      "options": ["Opción A", "Opción B", "Opción C"],
-      "correct": 1,
-      "explanation": "Explicación cultural amena de por qué esa es la respuesta correcta."
+      "question": "¿Por qué se consideran sagrados los ciervos Sika del Parque de Nara?",
+      "options": [
+        "Eran mensajeros divinos según la mitología sintoísta",
+        "Regalo personal del emperador Meiji",
+        "Guardianes del jardín botánico"
+      ],
+      "correct": 0,
+      "explanation": "El dios Takemikazuchi llegó montado en un ciervo blanco para proteger la ciudad sagrada."
     }
   ],
   "packing": [
-    { "cat": "Documentación & Dinero", "item": "Pasaporte en regla (> 6 meses de vigencia) y visado" },
-    { "cat": "Electrónica", "item": "Adaptador universal y powerbank de 10.000 mAh" },
-    { "cat": "Botiquín & Ropa", "item": "Repelente de mosquitos fuerte y calzado cómodo" }
+    { "cat": "Documentación & Pagos", "item": "Pasaporte en regla (> 6 meses) y códigos QR aduaneros" },
+    { "cat": "Electrónica & Logística", "item": "Adaptador de enchufe local y powerbank de 10.000 mAh" },
+    { "cat": "Ropa & Calzado", "item": "Calzado fácil de descalzar y calcetines impecables para templos" }
   ],
   "emergency": {
-    "police": "113",
-    "ambulance": "115",
-    "embassy": "Embajada consular y teléfono de emergencias 24h",
-    "hospital": "Hospital internacional de referencia con atención en inglés"
+    "police": "110",
+    "ambulance": "119",
+    "embassy": "Embajada de España en Tokio: (+81) 3 3583 8531 · Emergencia 24h: (+81) 80 4368 2883",
+    "hospital": "St. Luke's International Hospital (Tokio) - Urgencias en inglés"
   }
 }
 
-REGLAS DE CONTENIDO:
-1. No resumas días: desarrolla TODOS los días del viaje con amplitud y precisión.
-2. Añade un mínimo de 8 platos en "gourmet", 8 frases útiles en "flashcards", 4 preguntas de "quiz" y 4 normas en "etiquette".
-3. Incluye coordenadas de latitud y longitud realistas para cada día para el mapa interactivo.
-4. Genera EXCLUSIVAMENTE el JSON solicitado.
+DIRECTIVAS CRÍTICAS DE CALIDAD Y FIDELIDAD:
+1. FIDELIDAD MILIMÉTRICA vs SUGERENCIAS:
+   - Si las notas del usuario incluyen vuelos, códigos de reserva, fechas exactas, hoteles concretos o planes fijados, respétalos con precisión absoluta en orden cronológico. NO cambies horarios ni omitas traslados dados por el usuario. En esos días, pon "isSuggestion": false.
+   - Si las notas tienen huecos, días libres sin detallar o no especifican planes para alguna jornada, complétalas con planes locales de máxima categoría. En esos casos, pon "isSuggestion": true y antepón "[Sugerencia]" al título del día para que el usuario distinga de inmediato lo confirmado de lo propuesto.
+2. HISTORIA CON ALMA: En cada día ("historyContext"), no pongas generalidades de folleto turístico. Narra episodios históricos reales, anécdotas feudales, guerras de clanes, leyendas mitológicas o significado espiritual del lugar visitado.
+3. VUELOS: Si las notas contienen vuelos y localizadores, llena el array "flights". Si no hay vuelos en las notas, devuelve un array vacío [].
+4. CURIOSIDADES & ETIQUETA: Genera un mínimo de 5 "curiosities" profundas (propinas, tabúes, normas de mesa, onsen/templos) y 4 de "etiquette".
+5. GOURMET & FLASHCARDS: Mínimo 10 especialidades gastronómicas detalladas y entre 10 y 14 tarjetas de idioma (abarcando Restaurante, Compras, Transporte, Cortesía y Alergias/Emergencias con caracteres originales y fonética limpia).
+6. QUIZ: Genera 4 o 5 preguntas con datos históricos y explicaciones enriquecedoras.
 `;
-
-    // 3. Llamada al motor Gemini Flash Lite
     const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${env.GEMINI_API_KEY}`;
 
     const geminiResponse = await fetch(geminiUrl, {
@@ -493,7 +530,28 @@ const masterTemplateHtml = `<!DOCTYPE html>
     .giant-card { background: #ffffff; color: #111; padding: 30px 22px; border-radius: 22px; text-align: center; width: 380px; max-width: 95%; }
     .giant-local { font-size: 2.1rem; font-weight: 800; color: var(--primary); margin: 10px 0; font-family: var(--font-display); }
     .giant-phonetic { font-family: var(--font-mono); font-size: 1rem; color: #555; }
+/* Tarjeta de vuelos */
+.flight-card { background: var(--paper-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 16px; margin-bottom: 16px; box-shadow: var(--shadow-sm); }
+.flight-segment { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px dashed var(--border); }
+.flight-segment:last-child { border-bottom: none; padding-bottom: 0; }
+.flight-code { font-family: var(--font-mono); font-size: 0.82rem; font-weight: 700; color: var(--primary); }
+.flight-route { font-size: 0.88rem; font-weight: 700; margin-left: 6px; }
+.flight-time { font-size: 0.78rem; color: var(--muted); font-weight: 500; }
 
+/* Fact Grid 2x2 */
+.fact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+.fact-card { background: var(--paper-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 13px 14px; box-shadow: var(--shadow-sm); }
+.fact-card i { color: var(--secondary); margin-bottom: 6px; display: block; font-size: 1.1rem; }
+.fact-card h5 { font-size: 0.86rem; font-weight: 800; margin-bottom: 3px; }
+.fact-card p { font-size: 0.78rem; color: var(--muted); line-height: 1.4; }
+
+/* Chip de sugerencia */
+.suggestion-chip { background: var(--accent-subtle); color: var(--accent); font-size: 0.68rem; font-weight: 800; padding: 2px 7px; border-radius: 4px; text-transform: uppercase; margin-right: 6px; }
+
+/* Curiosidades culturales */
+.curiosity-card { background: var(--paper-card); border: 1px solid var(--border); border-left: 5px solid var(--primary); border-radius: var(--radius-sm); padding: 14px 16px; margin-bottom: 12px; box-shadow: var(--shadow-sm); }
+.curiosity-card h5 { font-size: 0.92rem; font-weight: 800; margin-bottom: 5px; display: flex; align-items: center; gap: 8px; }
+.curiosity-card p { font-size: 0.85rem; color: var(--muted); line-height: 1.5; }
     /* QUIZ */
     .quiz-card { background: var(--paper-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 16px; margin-bottom: 12px; box-shadow: var(--shadow-sm); }
     .quiz-q { font-size: 0.95rem; font-weight: 700; margin-bottom: 10px; }
@@ -567,7 +625,8 @@ const masterTemplateHtml = `<!DOCTYPE html>
         <h3><i class="fa-solid fa-cloud-sun"></i> Clima & Estacionalidad</h3>
         <div id="weatherList" style="font-size:0.86rem; color:var(--muted);"></div>
       </div>
-
+<div id="flightsContainer"></div>
+<div class="fact-grid" id="quickFactsGrid"></div>
       <div class="check-box-group">
         <h3><i class="fa-solid fa-ticket"></i> Transportes & Logística Clave</h3>
         <div id="transportsList"></div>
@@ -609,6 +668,15 @@ const masterTemplateHtml = `<!DOCTYPE html>
 
     <!-- TAB 5: ETIQUETA & CULTURA -->
     <section id="tab-etiqueta" class="tab-view">
+    <div style="margin-bottom:14px;">
+  <h2 style="font-size:1.35rem; font-weight:700;">Curiosidades & Costumbres</h2>
+  <p style="font-size:0.85rem; color:var(--muted);">Secretos históricos, leyendas y normas de protocolo.</p>
+</div>
+<div id="curiositiesList"></div>
+<div style="margin-top:20px; margin-bottom:12px;">
+  <h3 style="font-size:1.1rem; font-weight:700;">Protocolo & Etiqueta Diaria</h3>
+</div>
+<div id="etiquetteList"></div>
       <div id="etiquetteList"></div>
     </section>
 
@@ -699,24 +767,34 @@ const masterTemplateHtml = `<!DOCTYPE html>
         const d = window.__TRIP_DATA__;
         if (!d) return;
 
-        document.getElementById('hTitle').innerHTML = '<i class="fa-solid fa-compass"></i> ' + (d.tripTitle || 'ChesTrips');
-        document.getElementById('hDates').textContent = d.dates || '';
+        const hTitle = document.getElementById('hTitle');
+        if (hTitle) hTitle.innerHTML = '<i class="fa-solid fa-compass"></i> ' + (d.tripTitle || 'ChesTrips');
+        
+        const hDates = document.getElementById('hDates');
+        if (hDates) hDates.textContent = d.dates || '';
+
         this.initCountdown(d.startDateISO);
         this.renderStats(d.stats);
+        this.renderFlights(d.flights);
+        this.renderQuickFacts(d.quickFacts);
         this.renderThread(d.routeThread);
         this.renderWeather(d.weatherTable);
         this.renderTransports(d.transports);
         this.renderItinerary(d.days);
         this.initCurrency(d.currency);
         this.renderGourmet(d.gourmet);
+        this.renderCuriosities(d.curiosities);
         this.renderEtiquette(d.etiquette);
         this.renderFlashcards(d.flashcards);
         this.renderQuiz(d.quiz);
         this.renderPacking(d.packing);
         this.renderSOS(d.emergency);
 
-        const savedNotes = localStorage.getItem('ches_notes_' + (d.tripTitle || 'v'));
-        if (savedNotes) document.getElementById('localNotes').value = savedNotes;
+        const notesEl = document.getElementById('localNotes');
+        if (notesEl) {
+          const savedNotes = localStorage.getItem('ches_notes_' + (d.tripTitle || 'v'));
+          if (savedNotes) notesEl.value = savedNotes;
+        }
 
         this.loadChecklistStates();
       },
@@ -738,14 +816,16 @@ const masterTemplateHtml = `<!DOCTYPE html>
 
       initCountdown(startIso) {
         const chip = document.getElementById('hCountdown');
+        if (!chip) return;
         if (!startIso) { chip.textContent = 'En ruta'; return; }
         const diff = Math.ceil((new Date(startIso) - new Date()) / 86400000);
         chip.textContent = diff > 0 ? ('Faltan ' + diff + ' días') : '¡En curso!';
       },
 
       renderStats(s) {
-        if (!s) return;
-        document.getElementById('statGrid').innerHTML = \`
+        const c = document.getElementById('statGrid');
+        if (!c || !s) return;
+        c.innerHTML = \`
           <div class="stat-card"><div class="stat-num">\${s.days || '--'}</div><div class="stat-lbl">Días</div></div>
           <div class="stat-card"><div class="stat-num">\${s.cities || '--'}</div><div class="stat-lbl">Zonas</div></div>
           <div class="stat-card"><div class="stat-num">\${s.hotels || '--'}</div><div class="stat-lbl">Hoteles</div></div>
@@ -753,9 +833,47 @@ const masterTemplateHtml = `<!DOCTYPE html>
         \`;
       },
 
+      renderFlights(fl) {
+        const c = document.getElementById('flightsContainer');
+        if (!c) return;
+        if (!fl || !fl.length) { c.style.display = 'none'; return; }
+        c.style.display = 'block';
+        c.innerHTML = \`
+          <div class="flight-card">
+            <h4 style="font-size:0.9rem; font-weight:800; margin-bottom:10px; color:var(--primary);">
+              <i class="fa-solid fa-plane"></i> Vuelos Reservados \${fl[0]?.locator ? '<span style="font-family:var(--font-mono); font-size:0.8rem; font-weight:700; color:var(--muted); margin-left:6px;">(Ref: ' + fl[0].locator + ')</span>' : ''}
+            </h4>
+            \${fl.map(f => \`
+              <div class="flight-segment">
+                <div>
+                  <span class="flight-code">\${f.code || 'Vuelo'}</span>
+                  <span class="flight-route">\${f.route || ''}</span>
+                </div>
+                <div class="flight-time">\${f.time || ''}</div>
+              </div>
+            \`).join('')}
+          </div>
+        \`;
+      },
+
+      renderQuickFacts(qf) {
+        const c = document.getElementById('quickFactsGrid');
+        if (!c) return;
+        if (!qf || !qf.length) { c.style.display = 'none'; return; }
+        c.style.display = 'grid';
+        c.innerHTML = qf.map(f => \`
+          <div class="fact-card">
+            <i class="fa-solid \${f.icon || 'fa-circle-info'}"></i>
+            <h5>\${f.title}</h5>
+            <p>\${f.desc}</p>
+          </div>
+        \`).join('');
+      },
+
       renderThread(th) {
-        if (!th) return;
-        document.getElementById('routeThread').innerHTML = th.map(node => \`
+        const c = document.getElementById('routeThread');
+        if (!c || !th) return;
+        c.innerHTML = th.map(node => \`
           <div class="thread-stop" onclick="app.filterByThread('\${node.query || node.name}')">
             <i class="fa-solid \${node.icon || 'fa-location-dot'}"></i>
             <span>\${node.name}</span>
@@ -765,12 +883,13 @@ const masterTemplateHtml = `<!DOCTYPE html>
 
       filterByThread(q) {
         this.tab('itinerario');
-        document.getElementById('globalSearch').value = q;
-        this.search(q);
+        const s = document.getElementById('globalSearch');
+        if (s) { s.value = q; this.search(q); }
       },
 
       renderWeather(w) {
         const c = document.getElementById('weatherList');
+        if (!c) return;
         if (!w || !w.length) { c.innerHTML = '<p>Clima estacional favorable.</p>'; return; }
         c.innerHTML = w.map(row => \`
           <p style="margin-bottom:6px;"><strong>\${row.region}:</strong> \${row.temp} · \${row.desc}</p>
@@ -779,6 +898,7 @@ const masterTemplateHtml = `<!DOCTYPE html>
 
       renderTransports(tr) {
         const c = document.getElementById('transportsList');
+        if (!c) return;
         if (!tr || !tr.length) { c.innerHTML = '<p style="font-size:0.86rem; color:var(--muted);">Sin traslados complejos registrados.</p>'; return; }
         c.innerHTML = tr.map(t => \`
           <div style="padding:8px 0; border-bottom:1px solid var(--border-subtle); font-size:0.86rem;">
@@ -790,8 +910,10 @@ const masterTemplateHtml = `<!DOCTYPE html>
 
       initMap() {
         const d = window.__TRIP_DATA__;
-        if (!d || this.map) {
-          if (this.map) this.map.invalidateSize();
+        const container = document.getElementById('mapContainer');
+        if (!d || !container) return;
+        if (this.map) {
+          this.map.invalidateSize();
           return;
         }
 
@@ -822,13 +944,17 @@ const masterTemplateHtml = `<!DOCTYPE html>
 
       renderItinerary(days) {
         const c = document.getElementById('itineraryContainer');
+        if (!c) return;
         c.innerHTML = (days || []).map((day, idx) => \`
-          <div class="day-card searchable-card \${idx === 0 ? 'open' : ''}" data-search="\${day.title} \${day.meta} \${day.hotel}">
+          <div class="day-card searchable-card \${idx === 0 ? 'open' : ''}" data-search="\${day.title} \${day.meta || ''} \${day.hotel || ''}">
             <div class="day-header" onclick="this.parentElement.classList.toggle('open')">
-              <div style="display:flex; align-items:center;">
+              <div style="display:flex; align-items:center; min-width:0;">
                 <span class="day-badge">\${day.dateBadge || 'DÍA ' + day.day}</span>
                 <div class="day-title-wrap">
-                  <div class="day-title">Día \${day.day}: \${day.title}</div>
+                  <div class="day-title">
+                    Día \${day.day}: \${day.title}
+                    \${day.isSuggestion ? '<span class="suggestion-chip"><i class="fa-solid fa-sparkles"></i> Sugerencia</span>' : ''}
+                  </div>
                   <div class="day-meta">\${day.meta || ''}</div>
                 </div>
               </div>
@@ -860,44 +986,66 @@ const masterTemplateHtml = `<!DOCTYPE html>
       initCurrency(curr) {
         if (!curr) return;
         const rate = curr.rateToEUR || 1;
-        document.getElementById('fxLabelLocal').textContent = curr.code || 'LOCAL';
+        const lbl = document.getElementById('fxLabelLocal');
+        if (lbl) lbl.textContent = curr.code || 'LOCAL';
         const locIn = document.getElementById('fxLocal');
         const eurIn = document.getElementById('fxEur');
 
         this.calcFxLocal = () => {
+          if (!locIn || !eurIn) return;
           const val = parseFloat(locIn.value) || 0;
           eurIn.value = (val / rate).toFixed(2);
         };
         this.calcFxEur = () => {
+          if (!locIn || !eurIn) return;
           const val = parseFloat(eurIn.value) || 0;
           locIn.value = Math.round(val * rate);
         };
 
-        locIn.value = curr.quickChips?.[1] || 100000;
-        this.calcFxLocal();
+        if (locIn) {
+          locIn.value = curr.quickChips?.[1] || 100000;
+          this.calcFxLocal();
+        }
 
-        document.getElementById('fxChips').innerHTML = (curr.quickChips || []).map(chip => \`
-          <span class="fx-chip" onclick="document.getElementById('fxLocal').value=\${chip}; app.calcFxLocal();">\${chip.toLocaleString()} \${curr.code}</span>
-        \`).join('');
+        const chipsContainer = document.getElementById('fxChips');
+        if (chipsContainer) {
+          chipsContainer.innerHTML = (curr.quickChips || []).map(chip => \`
+            <span class="fx-chip" onclick="document.getElementById('fxLocal').value=\${chip}; app.calcFxLocal();">\${chip.toLocaleString()} \${curr.code}</span>
+          \`).join('');
+        }
       },
 
       renderGourmet(gList) {
         const c = document.getElementById('gourmetList');
-        if (!gList) return;
+        if (!c || !gList) return;
         c.innerHTML = gList.map((g, idx) => \`
-          <div class="check-line" onclick="app.toggleCheck('gourmet', \${idx}, this)">
-            <input type="checkbox" id="chk-g-\${idx}" onclick="event.stopPropagation(); app.toggleCheck('gourmet', \${idx}, this.parentElement)">
+          <div class="check-line" onclick="app.toggleCheck('gourmet', \${idx}, this, event)">
+            <input type="checkbox" id="chk-g-\${idx}" onclick="event.stopPropagation(); app.toggleCheck('gourmet', \${idx}, this.parentElement, event)">
             <label for="chk-g-\${idx}" style="cursor:pointer; flex:1;">
               <strong>\${g.dish}</strong> \${g.city ? '(' + g.city + ')' : ''}: \${g.desc}
+              \${g.recommendedSpot ? '<span style="color:var(--primary); font-weight:700; display:block; font-size:0.78rem; margin-top:2px;"><i class="fa-solid fa-location-dot"></i> Recomendado: ' + g.recommendedSpot + '</span>' : ''}
             </label>
           </div>
         \`).join('');
         this.calcProgress('gourmet');
       },
 
+      renderCuriosities(cur) {
+        const c = document.getElementById('curiositiesList');
+        if (!c) return;
+        if (!cur || !cur.length) { c.style.display = 'none'; return; }
+        c.style.display = 'block';
+        c.innerHTML = cur.map(row => \`
+          <div class="curiosity-card">
+            <h5><i class="fa-solid \${row.icon || 'fa-landmark'}"></i> \${row.title}</h5>
+            <p>\${row.desc}</p>
+          </div>
+        \`).join('');
+      },
+
       renderEtiquette(etList) {
         const c = document.getElementById('etiquetteList');
-        if (!etList) return;
+        if (!c || !etList) return;
         c.innerHTML = etList.map(e => \`
           <div class="check-box-group" style="margin-bottom:12px;">
             <h3><i class="fa-solid \${e.icon || 'fa-handshake'}"></i> \${e.title}</h3>
@@ -908,7 +1056,7 @@ const masterTemplateHtml = `<!DOCTYPE html>
 
       renderFlashcards(cards) {
         const c = document.getElementById('fcGrid');
-        if (!cards) return;
+        if (!c || !cards) return;
         c.innerHTML = cards.map(fc => \`
           <div class="flashcard" onclick="app.openModal('\${fc.category || ''}', '\${fc.local}', '\${fc.phonetic || ''}', '\${fc.spanish}')">
             <div style="font-size:0.75rem; font-weight:800; color:var(--muted);">\${fc.category || 'Frase'}</div>
@@ -932,8 +1080,9 @@ const masterTemplateHtml = `<!DOCTYPE html>
 
       renderQuiz(quiz) {
         const c = document.getElementById('quizContainer');
-        if (!quiz || !quiz.length) return;
-        document.getElementById('quizScoreText').textContent = '0 / ' + quiz.length;
+        if (!c || !quiz || !quiz.length) return;
+        const scoreEl = document.getElementById('quizScoreText');
+        if (scoreEl) scoreEl.textContent = '0 / ' + quiz.length;
         c.innerHTML = quiz.map((q, idx) => \`
           <div class="quiz-card" id="qcard-\${idx}">
             <div class="quiz-q">\${idx + 1}. \${q.question}</div>
@@ -952,6 +1101,7 @@ const masterTemplateHtml = `<!DOCTYPE html>
         this.quizAnswered[qIdx] = true;
 
         const card = document.getElementById('qcard-' + qIdx);
+        if (!card) return;
         const btns = card.querySelectorAll('.quiz-btn');
         const exp = document.getElementById('qexp-' + qIdx);
 
@@ -960,21 +1110,22 @@ const masterTemplateHtml = `<!DOCTYPE html>
           this.quizScore++;
         } else {
           btns[oIdx].classList.add('wrong');
-          btns[correct].classList.add('correct');
+          if (btns[correct]) btns[correct].classList.add('correct');
         }
-        exp.style.display = 'block';
-        const total = window.__TRIP_DATA__.quiz.length;
-        document.getElementById('quizScoreText').textContent = this.quizScore + ' / ' + total;
+        if (exp) exp.style.display = 'block';
+        const total = (window.__TRIP_DATA__.quiz || []).length;
+        const scoreEl = document.getElementById('quizScoreText');
+        if (scoreEl) scoreEl.textContent = this.quizScore + ' / ' + total;
       },
 
       renderPacking(pack) {
         const c = document.getElementById('packingList');
-        if (!pack) return;
+        if (!c || !pack) return;
         c.innerHTML = pack.map((p, idx) => {
           const itemText = typeof p === 'string' ? p : ('[' + p.cat + '] ' + p.item);
           return \`
-            <div class="check-line" onclick="app.toggleCheck('packing', \${idx}, this)">
-              <input type="checkbox" id="chk-p-\${idx}" onclick="event.stopPropagation(); app.toggleCheck('packing', \${idx}, this.parentElement)">
+            <div class="check-line" onclick="app.toggleCheck('packing', \${idx}, this, event)">
+              <input type="checkbox" id="chk-p-\${idx}" onclick="event.stopPropagation(); app.toggleCheck('packing', \${idx}, this.parentElement, event)">
               <label for="chk-p-\${idx}" style="cursor:pointer; flex:1;">\${itemText}</label>
             </div>
           \`;
@@ -983,23 +1134,26 @@ const masterTemplateHtml = `<!DOCTYPE html>
       },
 
       renderSOS(em) {
-        if (!em) return;
-        document.getElementById('sosEmbassy').textContent = em.embassy || 'Consultar con el consulado general de tu país.';
-        document.getElementById('sosPhones').innerHTML = \`
-          <p>• <strong>Policía:</strong> \${em.police || '112'} | • <strong>Ambulancia:</strong> \${em.ambulance || '112'}</p>
-          \${em.hospital ? \`<p style="margin-top:6px;">• <strong>Hospital:</strong> \${em.hospital}</p>\` : ''}
-        \`;
+        const embassyEl = document.getElementById('sosEmbassy');
+        if (embassyEl && em) embassyEl.textContent = em.embassy || 'Consultar con el consulado general de tu país.';
+        const phonesEl = document.getElementById('sosPhones');
+        if (phonesEl && em) {
+          phonesEl.innerHTML = \`
+            <p>• <strong>Policía:</strong> \${em.police || '112'} | • <strong>Ambulancia:</strong> \${em.ambulance || '112'}</p>
+            \${em.hospital ? \`<p style="margin-top:6px;">• <strong>Hospital:</strong> \${em.hospital}</p>\` : ''}
+          \`;
+        }
       },
 
-      toggleCheck(group, idx, lineEl) {
+      toggleCheck(group, idx, lineEl, evt) {
         const chk = lineEl.querySelector('input[type="checkbox"]');
-        if (event.target !== chk) chk.checked = !chk.checked;
-        lineEl.classList.toggle('checked-done', chk.checked);
+        if (chk && evt && evt.target !== chk) chk.checked = !chk.checked;
+        if (chk) lineEl.classList.toggle('checked-done', chk.checked);
 
-        const tripKey = window.__TRIP_DATA__.tripTitle || 'default';
+        const tripKey = window.__TRIP_DATA__?.tripTitle || 'default';
         const stateKey = 'ches_' + group + '_' + tripKey;
         const saved = JSON.parse(localStorage.getItem(stateKey) || '{}');
-        saved[idx] = chk.checked;
+        if (chk) saved[idx] = chk.checked;
         localStorage.setItem(stateKey, JSON.stringify(saved));
 
         this.calcProgress(group);
@@ -1019,7 +1173,7 @@ const masterTemplateHtml = `<!DOCTYPE html>
       },
 
       loadChecklistStates() {
-        const tripKey = window.__TRIP_DATA__.tripTitle || 'default';
+        const tripKey = window.__TRIP_DATA__?.tripTitle || 'default';
         ['gourmet', 'packing'].forEach(group => {
           const stateKey = 'ches_' + group + '_' + tripKey;
           const saved = JSON.parse(localStorage.getItem(stateKey) || '{}');
@@ -1028,7 +1182,8 @@ const masterTemplateHtml = `<!DOCTYPE html>
             const chk = document.getElementById(prefix + idx);
             if (chk && saved[idx]) {
               chk.checked = true;
-              chk.closest('.check-line').classList.add('checked-done');
+              const parentLine = chk.closest('.check-line');
+              if (parentLine) parentLine.classList.add('checked-done');
             }
           });
           this.calcProgress(group);
@@ -1037,7 +1192,10 @@ const masterTemplateHtml = `<!DOCTYPE html>
 
       saveNotes() {
         const d = window.__TRIP_DATA__;
-        localStorage.setItem('ches_notes_' + (d.tripTitle || 'v'), document.getElementById('localNotes').value);
+        const notesEl = document.getElementById('localNotes');
+        if (notesEl && d) {
+          localStorage.setItem('ches_notes_' + (d.tripTitle || 'v'), notesEl.value);
+        }
       },
 
       search(query) {
