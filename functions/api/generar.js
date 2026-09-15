@@ -128,12 +128,18 @@ ESTRUCTURA DEL JSON:
     }
   ],
   "flashcards": [
-    { "category": "Restaurante", "local": "お会計をお願いします", "phonetic": "O-kaikei o-negai shimasu", "spanish": "La cuenta, por favor" },
-    { "category": "Carta", "local": "英語のメニューはありますか？", "phonetic": "Eigo no menyuu wa arimasu ka?", "spanish": "¿Tienen menú en inglés?" },
-    { "category": "Compras", "local": "袋は結構です", "phonetic": "Fukuro wa kekkou desu", "spanish": "Sin bolsa de plástico, gracias" },
-    { "category": "Urgencias", "local": "お手洗いはどこですか？", "phonetic": "O-tearai wa doko desu ka?", "spanish": "¿Dónde está el baño?" },
-    { "category": "Taxi", "local": "駅までお願いします", "phonetic": "Eki made o-negai shimasu", "spanish": "A la estación, por favor" },
-    { "category": "Alergias", "local": "豚肉は入っていますか？", "phonetic": "Butaniku wa haitte imasu ka?", "spanish": "¿Lleva carne de cerdo?" }
+    { 
+      "category": "Restaurante", 
+      "local": "Frase en el idioma nativo del destino", 
+      "phonetic": "Pronunciación fonética si procede", 
+      "spanish": "La cuenta, por favor" 
+    },
+    { 
+      "category": "Urgencias", 
+      "local": "Frase en el idioma nativo del destino", 
+      "phonetic": "Pronunciación fonética si procede", 
+      "spanish": "¿Dónde está el baño/hospital?" 
+    }
   ],
   "quiz": [
     {
@@ -148,9 +154,10 @@ ESTRUCTURA DEL JSON:
     }
   ],
   "packing": [
-    { "cat": "Documentación & Pagos", "item": "Pasaporte en regla (> 6 meses) y códigos QR aduaneros" },
-    { "cat": "Electrónica & Logística", "item": "Adaptador de enchufe local y powerbank de 10.000 mAh" },
-    { "cat": "Ropa & Calzado", "item": "Calzado fácil de descalzar y calcetines impecables para templos" }
+    { "cat": "Documentación & Dinero", "item": "Pasaporte en regla (> 6 meses), copias en nube y tarjetas sin comisiones." },
+    { "cat": "Electrónica & Logística", "item": "Adaptador de clavija local, regleta compacta y powerbank de 10.000–20.000 mAh." },
+    { "cat": "Salud & Botiquín", "item": "Repelente tropical/antimosquitos, antidiarreico, suero oral y medicación habitual con receta." },
+    { "cat": "Ropa & Calzado", "item": "Calzado cerrado muy rodado (cero estrenos) y chubasquero transpirable o cortavientos." }
   ],
   "emergency": {
     "police": "110",
@@ -167,8 +174,14 @@ DIRECTIVAS CRÍTICAS DE CALIDAD Y FIDELIDAD:
 2. HISTORIA CON ALMA: En cada día ("historyContext"), no pongas generalidades de folleto turístico. Narra episodios históricos reales, anécdotas feudales, guerras de clanes, leyendas mitológicas o significado espiritual del lugar visitado.
 3. VUELOS: Si las notas contienen vuelos y localizadores, llena el array "flights". Si no hay vuelos en las notas, devuelve un array vacío [].
 4. CURIOSIDADES & ETIQUETA: Genera un mínimo de 5 "curiosities" profundas (propinas, tabúes, normas de mesa, onsen/templos) y 4 de "etiquette".
-5. GOURMET & FLASHCARDS: Mínimo 10 especialidades gastronómicas detalladas y entre 10 y 14 tarjetas de idioma (abarcando Restaurante, Compras, Transporte, Cortesía y Alergias/Emergencias con caracteres originales y fonética limpia).
-6. QUIZ: Genera 4 o 5 preguntas con datos históricos y explicaciones enriquecedoras.
+5. GOURMET & FLASHCARDS: 
+   - Mínimo 10 especialidades gastronómicas detalladas y específicas de la región/país de DESTINO.
+   - Entre 10 y 14 tarjetas de idioma en el IDIOMA OFICIAL DEL DESTINO (ej. si el destino es Italia en italiano, si es Tailandia en tailandés, etc. NUNCA uses japonés a menos que el destino sea Japón).
+   - "local": la frase en el idioma del país (con su alfabeto o caracteres locales si aplica).
+   - "phonetic": transcripción fonética/alfabeto latino si el idioma no usa alfabeto latino; si usa alfabeto latino, pon la pronunciación aproximada o déjalo claro.
+   - "spanish": traducción en español.
+6. QUIZ: Genera 5 o 6 preguntas con datos históricos y explicaciones enriquecedoras.
+7. MALETA INTELIGENTE: Genera entre 14 y 20 elementos esenciales organizados en 4 categorías ("Documentación & Dinero", "Salud & Botiquín", "Electrónica & Logística", "Ropa & Esenciales"). Adáptalos al clima, época del año, normativas de enchufes y peculiaridades sanitarias del destino en cuestión.
 `;
 
     const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${env.GEMINI_API_KEY}`;
@@ -182,7 +195,7 @@ DIRECTIVAS CRÍTICAS DE CALIDAD Y FIDELIDAD:
         ],
         generationConfig: {
           response_mime_type: "application/json",
-          temperature: 0.2
+          temperature: 0.5
         }
       })
     });
@@ -757,16 +770,23 @@ const masterTemplateHtml = `<!DOCTYPE html>
     <!-- TAB 8: MALETA -->
     <section id="tab-maleta" class="tab-view">
       <div class="progress-wrap">
-        <div style="display:flex; justify-content:space-between; font-size:0.84rem; font-weight:700;">
+        <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.84rem; font-weight:700;">
           <span>Equipaje listo</span>
           <span id="luggageLabel">0 / 0 (0%)</span>
         </div>
         <div class="progress-track"><div class="progress-fill" id="luggageBar"></div></div>
       </div>
-      <div class="check-box-group">
-        <h3><i class="fa-solid fa-suitcase-rolling"></i> Checklist Preparativos</h3>
-        <div id="packingList"></div>
+
+      <!-- Barra de acciones rápidas: añadir y resetear -->
+      <div style="display:flex; gap:8px; margin-bottom:14px;">
+        <input type="text" id="newLuggageInput" placeholder="Añadir ítem personal..." 
+               style="flex:1; padding:9px 12px; font-size:0.85rem; border:1px solid var(--border); border-radius:var(--radius-sm); background:var(--paper-card); color:var(--ink); outline:none;"
+               onkeydown="if(event.key==='Enter') app.addCustomLuggage()">
+        <button class="action-btn" onclick="app.addCustomLuggage()"><i class="fa-solid fa-plus"></i></button>
+        <button class="action-btn" onclick="app.resetPacking()" title="Desmarcar todo"><i class="fa-solid fa-arrow-rotate-left"></i></button>
       </div>
+
+      <div id="packingList"></div>
     </section>
 
     <!-- TAB 9: SOS & NOTAS -->
@@ -1216,15 +1236,71 @@ const masterTemplateHtml = `<!DOCTYPE html>
       renderPacking(pack) {
         const c = document.getElementById('packingList');
         if (!c || !pack) return;
-        c.innerHTML = pack.map((p, idx) => {
-          const itemText = typeof p === 'string' ? p : ('[' + p.cat + '] ' + p.item);
-          return \`
-            <div class="check-line" onclick="app.toggleCheck('packing', \${idx}, this, event)">
-              <input type="checkbox" id="chk-p-\${idx}" onclick="event.stopPropagation(); app.toggleCheck('packing', \${idx}, this.parentElement, event)">
-              <label for="chk-p-\${idx}" style="cursor:pointer; flex:1;">\${itemText}</label>
-            </div>
-          \`;
-        }).join('');
+
+        // Cargar ítems personalizados guardados por el usuario
+        const tripKey = window.__TRIP_DATA__?.tripTitle || 'default';
+        const customItems = JSON.parse(localStorage.getItem('ches_custom_pack_' + tripKey) || '[]');
+        
+        // Agrupar elementos por categoría
+        const categories = {};
+        const allItems = [...pack, ...customItems];
+
+        const catIcons = {
+          'Documentación & Dinero': 'fa-passport',
+          'Documentación & Pagos': 'fa-passport',
+          'Salud & Botiquín': 'fa-kit-medical',
+          'Electrónica & Logística': 'fa-plug',
+          'Ropa & Calzado': 'fa-shirt',
+          'Ropa & Esenciales': 'fa-shirt',
+          'Personal': 'fa-user-tag'
+        };
+
+        allItems.forEach((p, idx) => {
+          const cat = typeof p === 'string' ? 'Esenciales' : (p.cat || 'Esenciales');
+          const text = typeof p === 'string' ? p : p.item;
+          if (!categories[cat]) categories[cat] = [];
+          categories[cat].push({ text, originalIdx: idx });
+        });
+
+        c.innerHTML = Object.keys(categories).map(catName => `
+          <div class="check-box-group" style="margin-bottom:14px;">
+            <h3><i class="fa-solid ${catIcons[catName] || 'fa-suitcase'}"></i> ${catName}</h3>
+            ${categories[catName].map(item => `
+              <div class="check-line" onclick="app.toggleCheck('packing', ${item.originalIdx}, this, event)">
+                <input type="checkbox" id="chk-p-${item.originalIdx}" onclick="event.stopPropagation(); app.toggleCheck('packing', ${item.originalIdx}, this.parentElement, event)">
+                <label for="chk-p-${item.originalIdx}" style="cursor:pointer; flex:1;">${item.text}</label>
+              </div>
+            `).join('')}
+          </div>
+        `).join('');
+
+        this.calcProgress('packing');
+      },
+
+      addCustomLuggage() {
+        const input = document.getElementById('newLuggageInput');
+        if (!input || !input.value.trim()) return;
+        const text = input.value.trim();
+        const tripKey = window.__TRIP_DATA__?.tripTitle || 'default';
+        const customItems = JSON.parse(localStorage.getItem('ches_custom_pack_' + tripKey) || '[]');
+        
+        customItems.push({ cat: 'Personal', item: text });
+        localStorage.setItem('ches_custom_pack_' + tripKey, JSON.stringify(customItems));
+        
+        input.value = '';
+        this.renderPacking(window.__TRIP_DATA__?.packing || []);
+        this.loadChecklistStates();
+      },
+
+      resetPacking() {
+        if (!confirm('¿Deseas desmarcar todos los elementos del equipaje?')) return;
+        const tripKey = window.__TRIP_DATA__?.tripTitle || 'default';
+        localStorage.removeItem('ches_packing_' + tripKey);
+        
+        document.querySelectorAll('#packingList input[type="checkbox"]').forEach(chk => {
+          chk.checked = false;
+          chk.closest('.check-line')?.classList.remove('checked-done');
+        });
         this.calcProgress('packing');
       },
 
