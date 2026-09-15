@@ -820,49 +820,43 @@ const masterTemplateHtml = `<!DOCTYPE html>
       },
 
      initCountdown(startIso) {
-  const chip = document.getElementById('hCountdown');
-  if (!chip) return;
+        const chip = document.getElementById('hCountdown');
+        if (!chip) return;
 
-  if (!startIso) {
-    chip.textContent = 'En ruta';
-    return;
-  }
+        if (!startIso) {
+          chip.textContent = 'En ruta';
+          return;
+        }
 
-  let targetDate;
+        const cleanDateStr = String(startIso).trim().split(/[T\s]/)[0];
+        const parts = cleanDateStr.split('-');
+        let targetDate;
 
-  // Si viene en formato ISO (contiene 'T' o espacio), nos quedamos solo con YYYY-MM-DD
-  const cleanDateStr = String(startIso).trim().split(/[T\s]/)[0];
-  const parts = cleanDateStr.split('-');
+        if (parts.length === 3) {
+          targetDate = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+        } else {
+          targetDate = new Date(startIso);
+        }
 
-  if (parts.length === 3) {
-    const year = parseInt(parts[0], 10);
-    const month = parseInt(parts[1], 10) - 1;
-    const day = parseInt(parts[2], 10);
-    targetDate = new Date(year, month, day);
-  } else {
-    targetDate = new Date(startIso);
-  }
+        if (isNaN(targetDate.getTime())) {
+          chip.textContent = 'En ruta';
+          return;
+        }
 
-  // Comprobar fecha válida
-  if (isNaN(targetDate.getTime())) {
-    chip.textContent = 'En ruta';
-    return;
-  }
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        targetDate.setHours(0, 0, 0, 0);
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  targetDate.setHours(0, 0, 0, 0);
+        const diffDays = Math.round((targetDate - today) / 86400000);
 
-  const diffDays = Math.round((targetDate - today) / 86400000);
-
-  if (diffDays > 0) {
-    chip.textContent = diffDays === 1 ? 'Falta 1 día' : 'Faltan ' + diffDays + ' días';
-  } else if (diffDays === 0) {
-    chip.textContent = '¡Comienza hoy!';
-  } else {
-    chip.textContent = '¡En curso!';
-  }
-}
+        if (diffDays > 0) {
+          chip.textContent = diffDays === 1 ? 'Falta 1 d\xeda' : ('Faltan ' + diffDays + ' d\xedas');
+        } else if (diffDays === 0) {
+          chip.textContent = '\xa1Comienza hoy!';
+        } else {
+          chip.textContent = '\xa1En curso!';
+        }
+      },
 
       renderStats(s) {
         const c = document.getElementById('statGrid');
