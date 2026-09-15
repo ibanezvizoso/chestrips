@@ -69,7 +69,7 @@ REGLAS:
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        message: `Añadir guía: ${filename} [skip ci]`,
+        message: `Añadir guía: ${filename}`,
         content: base64Content
       })
     });
