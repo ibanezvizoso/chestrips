@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>ChesTrips Engine | Cuaderno de Viaje</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;700;800&family=JetBrains+Mono:wght@500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Leaflet CDN -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <style>
+    :root {
+      --bg: #faf7f2;
+      --card: #ffffff;
+      --card-muted: #f4ede2;
+      --text: #1a1c1a;
+      --muted: #6b6357;
+      --border: #e6dec9;
+      --primary: #2d5a3f;
+      --primary-subtle: #e8f2ec;
+      --accent: #bd3126;
+      --gold: #ad7919;
+      --radius: 18px;
+      --radius-sm: 10px;
+      --shadow: 0 4px 20px -2px rgba(45, 90, 63, 0.08);
+      --font-display: 'Fraunces', serif;
+      --font-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #121413;
+        --card: #1c201e;
+        --card-muted: #252b27;
+        --text: #f3f4f3;
+        --muted: #9ba39d;
+        --border: #2d3630;
+        --primary: #529e71;
+        --primary-subtle: rgba(82, 158, 113, 0.15);
+        --accent: #e25447;
+        --gold: #d89e3a;
+        --shadow: 0 4px 20px -2px rgba(0,0,0,0.4);
+      }
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body { font-family: var(--font-sans); background: var(--bg); color: var(--text); padding-bottom: 95px; line-height: 1.5; }
+    
+    header { background: var(--card); border-bottom: 1px solid var(--border); padding: 14px 18px; position: sticky; top: 0; z-index: 100; backdrop-filter: blur(10px); }
+    .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .brand { font-family: var(--font-display); font-size: 1.25rem; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 8px; }
+    .badge-dates { font-family: var(--font-mono); font-size: 0.72rem; background: var(--primary-subtle); color: var(--primary); padding: 4px 8px; border-radius: 999px; font-weight: 700; }
+    
+    .search-box { position: relative; width: 100%; }
+    .search-box input { width: 100%; padding: 10px 14px 10px 38px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--card-muted); color: var(--text); font-size: 0.88rem; outline: none; }
+    .search-box i { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 0.85rem; }
+
+    main { max-width: 680px; margin: 0 auto; padding: 16px; }
+    .tab-view { display: none; }
+    .tab-view.active { display: block; animation: tabIn 0.2s ease-out; }
+    @keyframes tabIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 14px; box-shadow: var(--shadow); }
+    h2.title { font-family: var(--font-display); font-size: 1.3rem; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; color: var(--primary); }
+
+    /* STATS & QUICK THREAD */
+    .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 14px; }
+    .stat-box { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 6px; text-align: center; }
+    .stat-val { font-family: var(--font-display); font-size: 1.35rem; font-weight: 800; color: var(--primary); }
+    .stat-lbl { font-size: 0.65rem; color: var(--muted); font-weight: 700; text-transform: uppercase; }
+
+    .thread { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; scrollbar-width: none; }
+    .thread-node { background: var(--card); border: 1px solid var(--border); padding: 8px 14px; border-radius: var(--radius-sm); white-space: nowrap; font-size: 0.78rem; font-weight: 700; display: flex; align-items: center; gap: 6px; cursor: pointer; }
+
+    /* ACORDEÓN DÍAS */
+    .day-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 12px; overflow: hidden; box-shadow: var(--shadow); }
+    .day-head { padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none; }
+    .day-badge { background: var(--primary-subtle); color: var(--primary); font-family: var(--font-mono); font-size: 0.76rem; font-weight: 700; padding: 6px 10px; border-radius: var(--radius-sm); }
+    .day-info { margin-left: 12px; flex: 1; }
+    .day-info h3 { font-size: 0.95rem; font-weight: 700; }
+    .day-info p { font-size: 0.76rem; color: var(--muted); }
+    .day-body { display: none; padding: 4px 16px 16px; border-top: 1px solid var(--border); font-size: 0.88rem; }
+    .day-card.open .day-body { display: block; }
+    .day-card.open .chevron { transform: rotate(180deg); color: var(--primary); }
+    .chevron { transition: transform 0.2s ease; color: var(--muted); }
+
+    .hotel-badge { background: var(--card-muted); border: 1px dashed var(--border); border-radius: var(--radius-sm); padding: 8px 12px; margin: 10px 0; display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; }
+    .clean-list { list-style: none; margin: 10px 0; }
+    .clean-list li { position: relative; padding-left: 16px; margin-bottom: 6px; font-size: 0.86rem; }
+    .clean-list li::before { content: "•"; position: absolute; left: 2px; color: var(--primary); font-size: 1.1rem; }
+
+    .tip-box { background: var(--card-muted); border-left: 4px solid var(--gold); padding: 8px 12px; border-radius: 4px; font-size: 0.82rem; margin-top: 8px; }
+
+    /* CHECKLISTS */
+    .chk-line { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); cursor: pointer; font-size: 0.88rem; }
+    .chk-line:last-child { border-bottom: none; }
+    .chk-line input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--primary); cursor: pointer; }
+    .chk-line.done span { text-decoration: line-through; opacity: 0.5; }
+
+    /* CONVERSOR & MODAL */
+    .fx-grid { display: flex; gap: 10px; margin-bottom: 10px; }
+    .fx-grid input { flex: 1; padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--card-muted); color: var(--text); font-family: var(--font-mono); font-size: 1rem; }
+    .chips { display: flex; gap: 6px; flex-wrap: wrap; }
+    .chip-btn { background: var(--card-muted); border: 1px solid var(--border); padding: 5px 10px; border-radius: 999px; font-size: 0.75rem; font-family: var(--font-mono); cursor: pointer; font-weight: 600; }
+
+    .fc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .fc-card { background: var(--card); border: 1px solid var(--border); padding: 14px; border-radius: var(--radius-sm); text-align: center; cursor: pointer; box-shadow: var(--shadow); }
+    .fc-card .loc { font-size: 1.1rem; font-weight: 800; color: var(--primary); font-family: var(--font-display); }
+    .fc-card .pho { font-size: 0.76rem; color: var(--muted); font-style: italic; }
+    .fc-card .spa { font-size: 0.82rem; margin-top: 4px; font-weight: 600; }
+
+    .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
+    .modal.active { display: flex; }
+    .modal-card { background: var(--card); border-radius: var(--radius); padding: 30px; width: 100%; max-width: 380px; text-align: center; }
+
+    /* DOCK INFERIOR */
+    .dock { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 8px 4px 18px; z-index: 900; box-shadow: 0 -4px 15px rgba(0,0,0,0.05); }
+    .dock-btn { background: none; border: none; color: var(--muted); font-size: 0.65rem; font-weight: 700; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; flex: 1; }
+    .dock-btn i { font-size: 1.1rem; }
+    .dock-btn.active { color: var(--primary); }
+  </style>
+</head>
+<body>
+
+  <!-- MODAL GIGANTE DE COMUNICACIÓN -->
+  <div class="modal" id="giantModal" onclick="app.closeModal()">
+    <div class="modal-card" onclick="event.stopPropagation()">
+      <div style="font-size:0.75rem; text-transform:uppercase; color:var(--muted); font-weight:700;">Traducción en grande</div>
+      <div id="mLoc" style="font-family:var(--font-display); font-size:2.2rem; color:var(--primary); margin:12px 0 4px;"></div>
+      <div id="mPho" style="font-family:var(--font-mono); font-size:1rem; color:var(--gold); margin-bottom:12px;"></div>
+      <div id="mSpa" style="font-size:1.1rem; font-weight:700; background:var(--card-muted); padding:10px; border-radius:var(--radius-sm);"></div>
+    </div>
+  </div>
+
+  <header>
+    <div class="header-top">
+      <div class="brand"><i class="fa-solid fa-compass"></i> ChesTrips</div>
+      <div class="badge-dates" id="hDates">--</div>
+    </div>
+    <div class="search-box">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="text" id="globalSearch" placeholder="Buscar ciudades, templos, restaurantes..." oninput="app.search(this.value)">
+    </div>
+  </header>
+
+  <main>
+    <!-- 1. RESUMEN -->
+    <section id="tab-resumen" class="tab-view active">
+      <div class="card" style="text-align:center; background:linear-gradient(135deg, var(--primary), #1a3826); color:#fff;">
+        <div style="font-size:0.8rem; text-transform:uppercase; letter-spacing:1px; opacity:0.85;">Comienza la aventura</div>
+        <div id="countdownTitle" style="font-family:var(--font-display); font-size:1.8rem; font-weight:800; margin:4px 0;">--</div>
+        <div id="tripBadge" style="font-size:0.85rem; font-weight:600; opacity:0.9;">--</div>
+      </div>
+
+      <div class="stat-grid" id="statGrid"></div>
+      <div class="thread" id="routeThread"></div>
+
+      <div class="card">
+        <h2 class="title"><i class="fa-solid fa-map-location-dot"></i> Mapa del Viaje</h2>
+        <div id="tripMap" style="height:320px; border-radius:var(--radius-sm); z-index:1;"></div>
+      </div>
+    </section>
+
+    <!-- 2. ITINERARIO -->
+    <section id="tab-itinerario" class="tab-view">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <span style="font-size:0.8rem; font-weight:800; color:var(--muted); text-transform:uppercase;">Día a Día</span>
+        <button onclick="app.toggleAllDays()" style="background:none; border:none; color:var(--primary); font-size:0.8rem; font-weight:700; cursor:pointer;">Expandir todo</button>
+      </div>
+      <div id="itineraryContainer"></div>
+    </section>
+
+    <!-- 3. HERRAMIENTAS -->
+    <section id="tab-herramientas" class="tab-view">
+      <div class="card">
+        <h2 class="title"><i class="fa-solid fa-money-bill-transfer"></i> Conversor de Moneda</h2>
+        <div class="fx-grid">
+          <input type="number" id="fxLocal" oninput="app.calcFxFromLocal()">
+          <input type="text" id="fxEur" readonly>
+        </div>
+        <div class="chips" id="fxChips"></div>
+      </div>
+
+      <div class="card">
+        <h2 class="title"><i class="fa-solid fa-comments"></i> Tarjetas para el Taxista / Restaurante</h2>
+        <p style="font-size:0.8rem; color:var(--muted); margin-bottom:12px;">Toca una frase para mostrarla en grande:</p>
+        <div class="fc-grid" id="fcGrid"></div>
+      </div>
+    </section>
+
+    <!-- 4. GOURMET -->
+    <section id="tab-gourmet" class="tab-view">
+      <div class="card">
+        <h2 class="title"><i class="fa-solid fa-utensils"></i> Pasaporte Gourmet</h2>
+        <div id="gourmetList"></div>
+      </div>
+    </section>
+
+    <!-- 5. MALETA & SOS -->
+    <section id="tab-maleta" class="tab-view">
+      <div class="card">
+        <h2 class="title"><i class="fa-solid fa-suitcase-rolling"></i> Checklist Maleta</h2>
+        <div id="packingList"></div>
+      </div>
+
+      <div class="card" style="border-left:4px solid var(--accent);">
+        <h2 class="title" style="color:var(--accent);"><i class="fa-solid fa-kit-medical"></i> SOS & Emergencias</h2>
+        <div id="emergencyBox" style="font-size:0.86rem;"></div>
+        <textarea id="localNotes" placeholder="Bloc de notas offline..." style="width:100%; height:100px; margin-top:10px; padding:10px; border-radius:var(--radius-sm); border:1px solid var(--border); background:var(--card-muted); color:var(--text); font-family:inherit; outline:none; resize:none;" oninput="localStorage.setItem('ches_notes', this.value)"></textarea>
+      </div>
+    </section>
+  </main>
+
+  <nav class="dock">
+    <button class="dock-btn active" onclick="app.tab('resumen', this)"><i class="fa-solid fa-compass"></i><span>Resumen</span></button>
+    <button class="dock-btn" onclick="app.tab('itinerario', this)"><i class="fa-solid fa-calendar-days"></i><span>Ruta</span></button>
+    <button class="dock-btn" onclick="app.tab('herramientas', this)"><i class="fa-solid fa-toolbox"></i><span>Tarjetas</span></button>
+    <button class="dock-btn" onclick="app.tab('gourmet', this)"><i class="fa-solid fa-bowl-food"></i><span>Comer</span></button>
+    <button class="dock-btn" onclick="app.tab('maleta', this)"><i class="fa-solid fa-list-check"></i><span>Maleta</span></button>
+  </nav>
+
+  <script>
+    window.__TRIP_DATA__ = {
+  "tripTitle": "Japón en Otoño: De Osaka a Tokyo",
+  "dates": "08 Nov - 24 Nov",
+  "startDateISO": "2024-11-08",
+  "badgeText": "Japón · 17 Días",
+  "currency": {
+    "code": "JPY",
+    "rateToEUR": 165,
+    "quickChips": [1000, 5000, 10000, 50000, 100000]
+  },
+  "stats": {
+    "days": 17,
+    "cities": 5,
+    "hotels": 4,
+    "flights": 4
+  },
+  "routeThread": [
+    { "name": "Osaka", "icon": "fa-building" },
+    { "name": "Nara", "icon": "fa-tree" },
+    { "name": "Kyoto", "icon": "fa-archway" },
+    { "name": "Takayama", "icon": "fa-mountain" },
+    { "name": "Tokyo", "icon": "fa-city" }
+  ],
+  "mapCenter": [35.6762, 139.6503],
+  "mapZoom": 6,
+  "days": [
+    {
+      "day": 1,
+      "dateBadge": "08 NOV",
+      "title": "Vuelo de salida hacia Madrid",
+      "meta": "LCG · MAD",
+      "lat": 43.3623,
+      "lng": -8.4115,
+      "hotel": "Vuelo nocturno",
+      "hotelMapsUrl": "https://maps.google.com/?q=Aeropuerto+de+A+Coruna",
+      "steps": [
+        "21:40h: Salida del vuelo IB0462 desde LCG.",
+        "23:00h: Llegada al aeropuerto de MAD."
+      ],
+      "cultureTip": "Prepara tu equipaje de mano con los adaptadores y documentación a mano.",
+      "practicalTip": "Asegúrate de llevar impresa la orden de intercambio del JR Pass."
+    },
+    {
+      "day": 2,
+      "dateBadge": "09 NOV",
+      "title": "Vuelo internacional a Japón",
+      "meta": "MAD · NRT",
+      "lat": 40.4983,
+      "lng": -3.5676,
+      "hotel": "En tránsito / Vuelo",
+      "hotelMapsUrl": "https://maps.google.com/?q=Adolfo+Suarez+Madrid-Barajas+Airport",
+      "steps": [
+        "11:55h: Salida del vuelo IB0281 desde MAD con destino Tokyo Narita."
+      ],
+      "cultureTip": "Descansa y ajusta tu reloj a la hora de Japón durante el vuelo.",
+      "practicalTip": "Completa los formularios de Visit Japan Web para agilizar la llegada."
+    },
+    {
+      "day": 3,
+      "dateBadge": "10 NOV",
+      "title": "Llegada a Japón y trayecto a Osaka",
+      "meta": "Narita · Osaka · Dotonbori",
+      "lat": 34.6937,
+      "lng": 135.5022,
+      "hotel": "Miyako City Osaka Hommachi",
+      "hotelMapsUrl": "https://maps.google.com/?q=Miyako+City+Osaka+Hommachi",
+      "steps": [
+        "10:15h: Aterrizaje en el aeropuerto de Narita (NRT).",
+        "Toma el Narita Express hacia Tokio/Shinagawa y conecta con el Shinkansen Hikari hasta Shin-Osaka.",
+        "16:00h: Llegada aproximada a Osaka y check-in en el hotel.",
+        "20:00h: Paseo por Dotonbori (20 min andando), cena y ambiente nocturno."
+      ],
+      "cultureTip": "Recuerda que con el JR Pass no puedes usar los trenes Nozomi, opta siempre por Hikari.",
+      "practicalTip": "Cómprate una tarjeta Suica o Pasmo en la estación para moverte con facilidad."
+    },
+    {
+      "day": 4,
+      "dateBadge": "11 NOV",
+      "title": "Castillo de Osaka, Mercados y Shinsekai",
+      "meta": "Osaka · Castillo · Kuromon · Amerikamura",
+      "lat": 34.6873,
+      "lng": 135.5262,
+      "hotel": "Miyako City Osaka Hommachi",
+      "hotelMapsUrl": "https://maps.google.com/?q=Miyako+City+Osaka+Hommachi",
+      "steps": [
+        "Desayuno cerca del hotel.",
+        "Visita al Castillo de Osaka y sus jardines Nishinomaru.",
+        "Paso por el templo Shitenno-ji.",
+        "Recorrido gastronómico por el Mercado Kuromon Ichiba.",
+        "Visita al Santuario Yasaka Namba y tarde de compras por Amerikamura, Nipponbashi y Shinsaibashi."
+      ],
+      "cultureTip": "En el mercado Kuromon respeta los espacios de los puestos si comes de pie.",
+      "practicalTip": "Prueba la tarta de queso de Rikuro Ojisan en Namba."
+    },
+    {
+      "day": 5,
+      "dateBadge": "12 NOV",
+      "title": "Excursión a Nara y vistas desde Umeda",
+      "meta": "Osaka · Nara · Umeda Sky Building",
+      "lat": 34.6851,
+      "lng": 135.8048,
+      "hotel": "Miyako City Osaka Hommachi",
+      "hotelMapsUrl": "https://maps.google.com/?q=Miyako+City+Osaka+Hommachi",
+      "steps": [
+        "Desayuno y trayecto de 1 hora en metro y tren hacia Nara.",
+        "Visita al Parque de Nara y sus ciervos sagrados, Templo Todai-ji y Santuario Kasuga Taisha.",
+        "Paseo por el barrio tradicional de Naramachi.",
+        "Regreso a Osaka para visitar el Barrio Umeda, Umeda Sky Building y el callejón Takimi Koji."
+      ],
+      "cultureTip": "Los ciervos de Nara son sagrados; hazles reverencias pero ten cuidado con la comida.",
+      "practicalTip": "El Umeda Sky Building cierra su acceso al mirador a las 22:00h."
+    },
+    {
+      "day": 6,
+      "dateBadge": "13 NOV",
+      "title": "Llegada a Kioto: Fushimi Inari y Gion",
+      "meta": "Osaka · Kioto · Fushimi Inari · Gion",
+      "lat": 34.9671,
+      "lng": 135.7727,
+      "hotel": "Kyoto Itoya Hotel Mon",
+      "hotelMapsUrl": "https://maps.google.com/?q=Kyoto+Itoya+Hotel+Mon",
+      "steps": [
+        "Desplazamiento en tren desde Osaka hasta la estación Karasuma en Kioto (aprox. 1 hora).",
+        "Visita inicial al santuario Fushimi Inari-taisha y sus miles de Torii.",
+        "Visita al Templo Kiyomizu-dera y descenso por las cuestas Sannenzaka y Ninenzaka.",
+        "Paseo por el Santuario Yasaka y el distrito de Gion al Anochecer."
+      ],
+      "cultureTip": "Madruga para ver los torii de Fushimi Inari con menor afluencia de turistas.",
+      "practicalTip": "Compra un abono de autobús diario de Kioto (Day Pass) para moverte con facilidad."
+    },
+    {
+      "day": 7,
+      "dateBadge": "14 NOV",
+      "title": "Kinkaku-ji y el Bosque de Bambú de Arashiyama",
+      "meta": "Kioto · Kinkaku-ji · Arashiyama",
+      "lat": 35.0394,
+      "lng": 135.7292,
+      "hotel": "Kyoto Itoya Hotel Mon",
+      "hotelMapsUrl": "https://maps.google.com/?q=Kyoto+Itoya+Hotel+Mon",
+      "steps": [
+        "Recorrido por el sendero Kinukake no Michi y visita al Templo Kinkaku-ji (Pabellón Dorado).",
+        "Trayecto en el tranvía Randen hasta la estación de Arashiyama.",
+        "Visita al Kimono Forest, el famoso Bosque de Bambú y el Templo Tenryu-ji.",
+        "Paseo por el distrito histórico de Saga-Toriimoto y regreso a Kioto para cenar."
+      ],
+      "cultureTip": "El otoño (Momiji) en los jardines de Arashiyama ofrece paisajes inolvidables.",
+      "practicalTip": "Puedes alquilar una bicicleta cerca de la estación de Saga-Arashiyama."
+    },
+    {
+      "day": 8,
+      "dateBadge": "15 NOV",
+      "title": "Paseo de la Filosofía y Barrios de Geishas",
+      "meta": "Kioto · Paseo de la Filosofía · Mercado Nishiki · Pontocho",
+      "lat": 35.0269,
+      "lng": 135.7982,
+      "hotel": "Kyoto Itoya Hotel Mon",
+      "hotelMapsUrl": "https://maps.google.com/?q=Kyoto+Itoya+Hotel+Mon",
+      "steps": [
+        "Visita al Templo Ginkaku-ji (Pabellón de Plata) y caminata por el Paseo de la Filosofía.",
+        "Parada en los templos Eikan-do y Nanzen-ji.",
+        "Desplazamiento en metro hasta Keage y visita al bullicioso Mercado Nishiki para comer.",
+        "Paseo por las callejuelas tradicionales de Pontocho y Miyagawacho junto al río Kamogawa."
+      ],
+      "cultureTip": "Sé respetuoso al hacer fotos en los barrios de geishas; está prohibido fotografiar geikos o maikos sin permiso.",
+      "practicalTip": "El mercado Nishiki cierra temprano por la tarde, acude a mediodía."
+    },
+    {
+      "day": 9,
+      "dateBadge": "16 NOV",
+      "title": "Viaje a Takayama y su casco antiguo",
+      "meta": "Kioto · Nagoya · Takayama",
+      "lat": 36.1408,
+      "lng": 137.2513,
+      "hotel": "Takayama Hotel (Kamininomachi)",
+      "hotelMapsUrl": "https://maps.google.com/?q=Takayama+Gifu",
+      "steps": [
+        "Trayecto en tren desde Kioto/Osaka hasta Nagoya y transbordo al tren expreso Hida con destino Takayama.",
+        "Llegada a Takayama y check-in en el hotel.",
+        "Paseo por el casco antiguo (Sanmachi Suji) y visita a las casas tradicionales Kusakabe o Yoshijima.",
+        "Cena probando la prestigiosa carne de ternera Hida en un restaurante local."
+      ],
+      "cultureTip": "Las tiendas del casco antiguo de Takayama cierran generalmente a las 17:00h.",
+      "practicalTip": "Haz la reserva de los trenes Hida con antelación debido a su alta demanda."
+    },
+    {
+      "day": 10,
+      "dateBadge": "17 NOV",
+      "title": "Excursión a Shirakawa-go y regreso a Takayama",
+      "meta": "Takayama · Shirakawa-go · Takayama",
+      "lat": 36.2557,
+      "lng": 136.9066,
+      "hotel": "Takayama Hotel (Kamininomachi)",
+      "hotelMapsUrl": "https://maps.google.com/?q=Takayama+Gifu",
+      "steps": [
+        "07:20h: Salida en bus Nohi desde la estación de Takayama hacia Shirakawa-go.",
+        "Llegada a la aldea declarada Patrimonio de la Humanidad.",
+        "Visita al mirador de Shiroyama, la granja Wada-ke y el templo Myozen-ji.",
+        "12:35h: Autobús de regreso a Takayama para continuar explorando los mercados matutinos y templos."
+      ],
+      "cultureTip": "Lleva un tentempié o bocadillo ya que comer en los restaurantes de la aldea puede ser muy costoso y con largas colas.",
+      "practicalTip": "Reserva los billetes de autobús Nohi con semanas de antelación."
+    },
+    {
+      "day": 11,
+      "dateBadge": "18 NOV",
+      "title": "Trayecto a Tokyo: Roppongi, Asakusa y Shinjuku",
+      "meta": "Takayama · Tokyo · Asakusa · Shinjuku",
+      "lat": 35.6895,
+      "lng": 139.6917,
+      "hotel": "Akihabara Resol Hotel",
+      "hotelMapsUrl": "https://maps.google.com/?q=Akihabara+Resol+Hotel+Tokyo",
+      "steps": [
+        "Tren matutino desde Takayama hacia Tokyo.",
+        "Llegada y check-in en el hotel en Akihabara.",
+        "Visita al distrito tradicional de Asakusa y el templo Senso-ji.",
+        "Paseo por Shibuya, cruce de Shibuya y la estatua de Hachiko.",
+        "Cena y recorrido nocturno entre los neones de Shinjuku y Omoide Yokocho."
+      ],
+      "cultureTip": "Shinjuku de noche ofrece una de las estampas más icónicas de ciberpunk urbano.",
+      "practicalTip": "Utiliza Google Maps combinado con tu tarjeta Suica para moverte eficientemente por la red de metro de Tokyo."
+    },
+    {
+      "day": 12,
+      "dateBadge": "19 NOV",
+      "title": "Excursión a Nikko",
+      "meta": "Tokyo · Nikko · Tokyo",
+      "lat": 36.7558,
+      "lng": 139.5965,
+      "hotel": "Akihabara Resol Hotel",
+      "hotelMapsUrl": "https://maps.google.com/?q=Akihabara+Resol+Hotel+Tokyo",
+      "steps": [
+        "Tren Shinkansen desde Ueno hasta Utsunomiya y enlace con la línea Nikko hasta la estación de Nikko.",
+        "Visita al Puente Sagrado Shinkyo.",
+        "Recorrido por el complejo de templos: Templo Toshogu, Templo Futarasan y Taiyuin-byo.",
+        "Paseo por el impresionante abismo natural de Kanmangafuchi y regreso a Tokyo."
+      ],
+      "cultureTip": "En la zona alta de los templos de Nikko no hay restaurantes, lleva víveres comprados en el pueblo.",
+      "practicalTip": "Compra el pase de bus diario en la estación de Nikko para los desplazamientos locales."
+    },
+    {
+      "day": 13,
+      "dateBadge": "20 NOV",
+      "title": "Excursión a Kamakura y Yokohama",
+      "meta": "Tokyo · Kamakura · Yokohama · Tokyo",
+      "lat": 35.3192,
+      "lng": 139.5539,
+      "hotel": "Akihabara Resol Hotel",
+      "hotelMapsUrl": "https://maps.google.com/?q=Akihabara+Resol+Hotel+Tokyo",
+      "steps": [
+        "Desplazamiento matutino en tren hacia Kamakura.",
+        "Visita al Gran Buda de Kamakura y templos históricos de la zona.",
+        "Desplazamiento por la tarde hacia Yokohama para pasear por Minato Mirai y el barrio chino (Chinatown).",
+        "Regreso a Tokyo para descansar."
+      ],
+      "cultureTip": "Kamakura fue capital de Japón y destaca por su fuerte herencia samurái y budista.",
+      "practicalTip": "El tren de la línea Enoden en Kamakura ofrece vistas panorámicas hacia la costa."
+    },
+    {
+      "day": 14,
+      "dateBadge": "21 NOV",
+      "title": "Lagos del Monte Fuji (Kawaguchiko)",
+      "meta": "Tokyo · Kawaguchiko · Tokyo",
+      "lat": 35.5173,
+      "lng": 138.7615,
+      "hotel": "Akihabara Resol Hotel",
+      "hotelMapsUrl": "https://maps.google.com/?q=Akihabara+Resol+Hotel+Tokyo",
+      "steps": [
+        "Autobús directo o tren hacia la zona de los Cinco Lagos del Fuji (Kawaguchiko).",
+        "Paseo a orillas del lago Kawaguchi con vistas panorámicas del Monte Fuji.",
+        "Visita al teleférico Kachi Kachi y pagodas locales.",
+        "Regreso a Tokyo al atardecer."
+      ],
+      "cultureTip": "Las mañanas despejadas ofrecen la mejor visibilidad para contemplar el Monte Fuji sin nubes.",
+      "practicalTip": "Reserva los billetes de autobús expreso Fuji Excursion con bastante antelación."
+    },
+    {
+      "day": 15,
+      "dateBadge": "22 NOV",
+      "title": "Ginza, Tsukiji, Akihabara y Ueno",
+      "meta": "Tokyo · Ginza · Tsukiji · Akihabara · Ueno",
+      "lat": 35.6715,
+      "lng": 139.7649,
+      "hotel": "Akihabara Resol Hotel",
+      "hotelMapsUrl": "https://maps.google.com/?q=Akihabara+Resol+Hotel+Tokyo",
+      "steps": [
+        "Paseo arquitectónico por el barrio de Ginza (zona peatonal en fin de semana).",
+        "Desayuno de sushi en el mercado exterior de Tsukiji y visita a los jardines Hamarikyu.",
+        "Tarde de cultura Otaku y tecnología en Akihabara.",
+        "Paseo por el mercadillo de Ameyoko hasta llegar al Parque de Ueno."
+      ],
+      "cultureTip": "Los fines de semana la calle principal de Ginza se cierra al tráfico para peatones.",
+      "practicalTip": "Prueba las hamburguesas de Wagyu en Henry's Burger en Akihabara."
+    },
+    {
+      "day": 16,
+      "dateBadge": "23 NOV",
+      "title": "Palacio Imperial, Estación de Tokyo y atardecer en Odaiba",
+      "meta": "Tokyo · Palacio Imperial · Odaiba",
+      "lat": 35.6852,
+      "lng": 139.7528,
+      "hotel": "Akihabara Resol Hotel",
+      "hotelMapsUrl": "https://maps.google.com/?q=Akihabara+Resol+Hotel+Tokyo",
+      "steps": [
+        "Visita a la icónica Estación de Tokyo y los jardines del Palacio Imperial (puente Nijubashi).",
+        "Paseo por Shimbashi y Shiodome (reloj de Ghibli).",
+        "Toma el tren sin conductor Yurikamome cruzando el Rainbow Bridge hacia la isla de Odaiba.",
+        "Visita al Gundam Unicorn a tamaño real y atardecer frente a la bahía de Tokyo."
+      ],
+      "cultureTip": "Sitúate en el primer o último vagón del tren Yurikamome para disfrutar de las mejores vistas de la bahía.",
+      "practicalTip": "El atardecer en el paseo marítimo de Odaiba con la torre de Tokyo al fondo es imprescindible."
+    },
+    {
+      "day": 17,
+      "dateBadge": "24 NOV",
+      "title": "Regreso a España",
+      "meta": "NRT · MAD · LCG",
+      "lat": 35.772,
+      "lng": 140.3929,
+      "hotel": "Vuelo de regreso",
+      "hotelMapsUrl": "https://maps.google.com/?q=Narita+International+Airport",
+      "steps": [
+        "11:55h: Salida del vuelo IB0282 desde Narita (NRT) hacia Madrid.",
+        "19:45h: Llegada a MAD.",
+        "22:15h: Vuelo de conexión IB0463 con destino final LCG.",
+        "23:35h: Llegada a A Coruña."
+      ],
+      "cultureTip": "Conserva tus recuerdos y el sello de tu libreta de viaje.",
+      "practicalTip": "Verifica el estado de tus vuelos de conexión con antelación."
+    }
+  ],
+  "transports": [
+    {
+      "date": "08 NOV · 21:40",
+      "title": "Vuelo LCG - MAD",
+      "desc": "Vuelo IB0462 operado por Iberia."
+    },
+    {
+      "date": "09 NOV · 11:55",
+      "title": "Vuelo MAD - NRT",
+      "desc": "Vuelo internacional IB0281 hacia Tokyo Narita."
+    },
+    {
+      "date": "24 NOV · 11:55",
+      "title": "Vuelo NRT - MAD",
+      "desc": "Vuelo de regreso IB0282 hacia Madrid."
+    },
+    {
+      "date": "24 NOV · 22:15",
+      "title": "Vuelo MAD - LCG",
+      "desc": "Vuelo final IB0463 hacia A Coruña."
+    }
+  ],
+  "gourmet": [
+    {
+      "dish": "Takoyaki",
+      "desc": "Bolas de pulpo crujientes por fuera y cremosas por dentro, especialidad de Osaka."
+    },
+    {
+      "dish": "Okonomiyaki",
+      "desc": "Tortilla japonesa salada cocinada a la plancha con múltiples ingredientes."
+    },
+    {
+      "dish": "Carne de Hida",
+      "desc": "Exquisita carne de ternera japonesa cocinada a la parrilla en Takayama."
+    },
+    {
+      "dish": "Tonkatsu",
+      "desc": "Lomo de cerdo empanado y frito, crujiente y jugoso."
+    }
+  ],
+  "flashcards": [
+    {
+      "local": "Konnichiwa",
+      "phonetic": "Con-ni-chi-wa",
+      "spanish": "Hola / Buenas tardes"
+    },
+    {
+      "local": "Arigato gozaimasu",
+      "phonetic": "A-ri-ga-to go-zai-mas",
+      "spanish": "Muchas gracias"
+    },
+    {
+      "local": "Sumimasen",
+      "phonetic": "Su-mi-ma-sen",
+      "spanish": "Disculpe / Perdón"
+    }
+  ],
+  "quiz": [
+    {
+      "question": "¿Cómo se llama el tren bala japonés que NO se puede usar con el JR Pass estándar?",
+      "options": ["Hikari", "Kodama", "Nozomi", "Sakura"],
+      "correct": 2,
+      "explanation": "Los servicios Nozomi y Mizuho requieren el pago de un suplemento especial y no están incluidos de forma gratuita en el JR Pass."
+    }
+  ],
+  "packing": [
+    "Pasaporte y orden de intercambio del JR Pass",
+    "Seguro de viaje con cobertura médica",
+    "Adaptador de corriente americano (clavija plana, 110V) y regleta",
+    "Tarjeta Suica/Pasmo y tarjetas tipo Revolut/N26",
+    "Bolsa de tela y bolsa de plástico para residuos"
+  ],
+  "emergency": {
+    "police": "110",
+    "ambulance": "119",
+    "embassy": "Embajada de España en Tokyo: +81 3 3583 8531",
+    "hospital": "St. Luke's International Hospital (Tokyo)"
+  }
+};
+
+    const app = {
+      map: null,
+      allExpanded: false,
+
+      init() {
+        const data = window.__TRIP_DATA__;
+        if (!data) return;
+
+        document.getElementById('hDates').textContent = data.dates || '';
+        document.getElementById('tripBadge').textContent = data.badgeText || data.tripTitle;
+        this.initCountdown(data.startDateISO);
+        this.renderStats(data.stats);
+        this.renderThread(data.routeThread);
+        this.renderItinerary(data.days);
+        this.initMap(data);
+        this.initCurrency(data.currency);
+        this.renderFlashcards(data.flashcards);
+        this.renderChecklist('gourmetList', data.gourmet?.map(g => g.dish + ' (' + g.desc + ')') || [], 'ches_gourmet');
+        this.renderChecklist('packingList', data.packing || [], 'ches_packing');
+        this.renderEmergency(data.emergency);
+
+        const savedNotes = localStorage.getItem('ches_notes');
+        if (savedNotes) document.getElementById('localNotes').value = savedNotes;
+      },
+
+      tab(tabId, btn) {
+        document.querySelectorAll('.tab-view').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.dock-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('tab-' + tabId).classList.add('active');
+        if (btn) btn.classList.add('active');
+        if (tabId === 'resumen' && this.map) setTimeout(() => this.map.invalidateSize(), 200);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      },
+
+      initCountdown(startIso) {
+        const title = document.getElementById('countdownTitle');
+        if (!startIso) { title.textContent = "¡En marcha!"; return; }
+        const diff = Math.ceil((new Date(startIso) - new Date()) / 86400000);
+        title.textContent = diff > 0 ? `Faltan ${diff} días` : "¡Viaje en curso!";
+      },
+
+      renderStats(s) {
+        if (!s) return;
+        document.getElementById('statGrid').innerHTML = `
+          <div class="stat-box"><div class="stat-val">${s.days || '--'}</div><div class="stat-lbl">Días</div></div>
+          <div class="stat-box"><div class="stat-val">${s.cities || '--'}</div><div class="stat-lbl">Zonas</div></div>
+          <div class="stat-box"><div class="stat-val">${s.hotels || '--'}</div><div class="stat-lbl">Hoteles</div></div>
+          <div class="stat-box"><div class="stat-val">${s.flights || '--'}</div><div class="stat-lbl">Vuelos</div></div>
+        `;
+      },
+
+      renderThread(th) {
+        if (!th) return;
+        document.getElementById('routeThread').innerHTML = th.map(n => `
+          <div class="thread-node"><i class="fa-solid ${n.icon || 'fa-location-dot'}"></i> ${n.name}</div>
+        `).join('');
+      },
+
+      initMap(data) {
+        if (!document.getElementById('tripMap') || !window.L) return;
+        this.map = L.map('tripMap').setView(data.mapCenter || [21.0, 105.8], data.mapZoom || 6);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(this.map);
+
+        (data.days || []).forEach(d => {
+          if (d.lat && d.lng) {
+            L.marker([d.lat, d.lng]).addTo(this.map)
+              .bindPopup(`<b>Día ${d.day}: ${d.title}</b><br>${d.meta || ''}`);
+          }
+        });
+      },
+
+      renderItinerary(days) {
+        const c = document.getElementById('itineraryContainer');
+        c.innerHTML = (days || []).map(d => `
+          <div class="day-card" data-search="${d.title} ${d.meta} ${d.hotel}">
+            <div class="day-head" onclick="this.parentElement.classList.toggle('open')">
+              <div class="day-badge">${d.dateBadge || 'DÍA ' + d.day}</div>
+              <div class="day-info">
+                <h3>Día ${d.day}: ${d.title}</h3>
+                <p>${d.meta || ''}</p>
+              </div>
+              <i class="fa-solid fa-chevron-down chevron"></i>
+            </div>
+            <div class="day-body">
+              ${d.hotel ? `
+                <div class="hotel-badge">
+                  <span><i class="fa-solid fa-hotel" style="color:var(--primary);"></i> ${d.hotel}</span>
+                  ${d.hotelMapsUrl ? `<a href="${d.hotelMapsUrl}" target="_blank" style="color:var(--primary); font-weight:700; text-decoration:none;"><i class="fa-solid fa-location-arrow"></i> Maps</a>` : ''}
+                </div>` : ''}
+              <ul class="clean-list">
+                ${(d.steps || []).map(s => `<li>${s}</li>`).join('')}
+              </ul>
+              ${d.practicalTip ? `<div class="tip-box"><strong>Consejo:</strong> ${d.practicalTip}</div>` : ''}
+            </div>
+          </div>
+        `).join('');
+      },
+
+      toggleAllDays() {
+        this.allExpanded = !this.allExpanded;
+        document.querySelectorAll('.day-card').forEach(c => c.classList.toggle('open', this.allExpanded));
+      },
+
+      initCurrency(curr) {
+        if (!curr) return;
+        const rate = curr.rateToEUR || 1;
+        const locIn = document.getElementById('fxLocal');
+        const eurIn = document.getElementById('fxEur');
+
+        window.calcFx = () => {
+          const val = parseFloat(locIn.value) || 0;
+          eurIn.value = (val / rate).toFixed(2) + ' €';
+        };
+        this.calcFxFromLocal = window.calcFx;
+
+        locIn.value = curr.quickChips?.[0] || 100000;
+        window.calcFx();
+
+        document.getElementById('fxChips').innerHTML = (curr.quickChips || []).map(chip => `
+          <button class="chip-btn" onclick="document.getElementById('fxLocal').value=${chip}; window.calcFx();">
+            ${chip.toLocaleString()} ${curr.code}
+          </button>
+        `).join('');
+      },
+
+      renderFlashcards(cards) {
+        document.getElementById('fcGrid').innerHTML = (cards || []).map(c => `
+          <div class="fc-card" onclick="app.openModal('${c.local}', '${c.phonetic}', '${c.spanish}')">
+            <div class="loc">${c.local}</div>
+            <div class="pho">${c.phonetic || ''}</div>
+            <div class="spa">${c.spanish}</div>
+          </div>
+        `).join('');
+      },
+
+      openModal(loc, pho, spa) {
+        document.getElementById('mLoc').textContent = loc;
+        document.getElementById('mPho').textContent = pho;
+        document.getElementById('mSpa').textContent = spa;
+        document.getElementById('giantModal').classList.add('active');
+      },
+
+      closeModal() {
+        document.getElementById('giantModal').classList.remove('active');
+      },
+
+      renderChecklist(containerId, items, storageKey) {
+        const saved = JSON.parse(localStorage.getItem(storageKey) || '{}');
+        const c = document.getElementById(containerId);
+        c.innerHTML = items.map((item, idx) => `
+          <label class="chk-line ${saved[idx] ? 'done' : ''}">
+            <input type="checkbox" ${saved[idx] ? 'checked' : ''} onchange="app.toggleChk('${storageKey}', ${idx}, this)">
+            <span>${item}</span>
+          </label>
+        `).join('');
+      },
+
+      toggleChk(key, idx, input) {
+        const saved = JSON.parse(localStorage.getItem(key) || '{}');
+        saved[idx] = input.checked;
+        localStorage.setItem(key, JSON.stringify(saved));
+        input.parentElement.classList.toggle('done', input.checked);
+      },
+
+      renderEmergency(em) {
+        if (!em) return;
+        document.getElementById('emergencyBox').innerHTML = `
+          <p><strong>Policía:</strong> ${em.police || '112'}</p>
+          <p><strong>Ambulancia:</strong> ${em.ambulance || '112'}</p>
+          <p style="margin-top:6px;"><strong>Embajada:</strong> ${em.embassy || '--'}</p>
+          <p><strong>Hospital de referencia:</strong> ${em.hospital || '--'}</p>
+        `;
+      },
+
+      search(q) {
+        const term = q.toLowerCase();
+        document.querySelectorAll('.day-card').forEach(card => {
+          const text = (card.getAttribute('data-search') || '').toLowerCase();
+          const match = text.includes(term);
+          card.style.display = match ? 'block' : 'none';
+          if (match && term.length > 2) card.classList.add('open');
+        });
+      }
+    };
+
+    window.addEventListener('DOMContentLoaded', () => app.init());
+  </script>
+</body>
+</html>
