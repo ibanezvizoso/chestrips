@@ -850,11 +850,11 @@ const masterTemplateHtml = `<!DOCTYPE html>
         const diffDays = Math.round((targetDate - today) / 86400000);
 
         if (diffDays > 0) {
-          chip.textContent = diffDays === 1 ? 'Falta 1 d\xeda' : ('Faltan ' + diffDays + ' d\xedas');
+          chip.textContent = diffDays === 1 ? 'Falta 1 día' : ('Faltan ' + diffDays + ' días');
         } else if (diffDays === 0) {
-          chip.textContent = '\xa1Comienza hoy!';
+          chip.textContent = '¡Comienza hoy!';
         } else {
-          chip.textContent = '\xa1En curso!';
+          chip.textContent = '¡En curso!';
         }
       },
 
