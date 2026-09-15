@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChesTrips - Andalucía Express</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --accent: #38bdf8;
+            --accent-gradient: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+            --success: #34d399;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 0;
+            margin: 0;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 480px;
+            background-color: var(--bg-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            box-shadow: 0 0 25px rgba(0,0,0,0.5);
+            padding-bottom: 75px;
+        }
+
+        header {
+            padding: 24px 20px 16px;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .brand h1 {
+            font-size: 1.4rem;
+            font-weight: 800;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+        }
+
+        .badge {
+            background: rgba(56, 189, 248, 0.1);
+            color: var(--accent);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border: 1px solid rgba(56, 189, 248, 0.2);
+        }
+
+        .trip-summary {
+            margin-top: 10px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            display: flex;
+            gap: 15px;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 20px;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Nav Bar */
+        .nav-bar {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            max-width: 480px;
+            height: 65px;
+            background: #1e293b;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .nav-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            width: 25%;
+            transition: color 0.2s;
+        }
+
+        .nav-btn.active {
+            color: var(--accent);
+        }
+
+        .nav-btn svg {
+            width: 22px;
+            height: 22px;
+            fill: currentColor;
+        }
+
+        /* Timeline / Itinerary */
+        .day-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 16px;
+            border: 1px solid var(--border-color);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .day-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--accent-gradient);
+        }
+
+        .day-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .day-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .day-location {
+            font-size: 0.8rem;
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .day-highlights {
+            list-style: none;
+        }
+
+        .day-highlights li {
+            position: relative;
+            padding-left: 20px;
+            margin-bottom: 8px;
+            font-size: 0.88rem;
+            color: var(--text-muted);
+        }
+
+        .day-highlights li::before {
+            content: "•";
+            position: absolute;
+            left: 5px;
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        /* Map */
+        #map {
+            width: 100%;
+            height: 400px;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            z-index: 1;
+        }
+
+        /* Checklist */
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            background: var(--card-bg);
+            padding: 14px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+
+        .checklist-item.checked {
+            opacity: 0.5;
+            border-color: transparent;
+        }
+
+        .checklist-item.checked span {
+            text-decoration: line-through;
+        }
+
+        .checkbox {
+            width: 20px;
+            height: 20px;
+            border-radius: 6px;
+            border: 2px solid var(--text-muted);
+            margin-right: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .checklist-item.checked .checkbox {
+            background: var(--success);
+            border-color: var(--success);
+        }
+
+        .checkbox::after {
+            content: '✓';
+            color: #000;
+            font-weight: bold;
+            font-size: 12px;
+            display: none;
+        }
+
+        .checklist-item.checked .checkbox::after {
+            display: block;
+        }
+
+        .add-item-form {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .add-item-form input {
+            flex: 1;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            border-radius: 10px;
+            color: var(--text-main);
+            outline: none;
+        }
+
+        .add-item-form button {
+            background: var(--accent-gradient);
+            border: none;
+            color: #000;
+            font-weight: bold;
+            padding: 0 16px;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        /* Notes Box */
+        .notes-area {
+            width: 100%;
+            height: 300px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 16px;
+            color: var(--text-main);
+            font-size: 0.95rem;
+            line-height: 1.5;
+            resize: none;
+            outline: none;
+        }
+
+        .notes-area:focus {
+            border-color: var(--accent);
+        }
+
+        .status-msg {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 8px;
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <header>
+        <div class="brand">
+            <h1>ChesTrips Engine</h1>
+            <span class="badge">9 DÍAS</span>
+        </div>
+        <div class="trip-summary">
+            <span>📍 Málaga · Cádiz · Granada</span>
+            <span>🗓️ Andalucía</span>
+        </div>
+    </header>
+
+    <main>
+        <!-- ITINERARIO -->
+        <section id="itinerary" class="tab-content active">
+            <div class="day-card">
+                <div class="day-header">
+                    <span class="day-title">Días 1 - 5</span>
+                    <span class="day-location">Málaga</span>
+                </div>
+                <ul class="day-highlights">
+                    <li>Centro Histórico y Alcazaba de Málaga</li>
+                    <li>Atardecer en Castillo de Gibralfaro</li>
+                    <li>Paseo por el Muelle Uno y Playa de la Malagueta</li>
+                    <li>Excursión opcional a Frigiliana y Nerja</li>
+                </ul>
+            </div>
+
+            <div class="day-card">
+                <div class="day-header">
+                    <span class="day-title">Días 6 - 7</span>
+                    <span class="day-location">Cádiz</span>
+                </div>
+                <ul class="day-highlights">
+                    <li>Ruta por el casco antiguo y Barrio del Pópulo</li>
+                    <li>Atardecer en la Playa de La Caleta</li>
+                    <li>Subida a la Torre Tavira y Catedral de Cádiz</li>
+                    <li>Gastronomía local: Pescaíto frito en la Plaza de las Flores</li>
+                </ul>
+            </div>
+
+            <div class="day-card">
+                <div class="day-header">
+                    <span class="day-title">Días 8 - 9</span>
+                    <span class="day-location">Granada</span>
+                </div>
+                <ul class="day-highlights">
+                    <li>Visita al Complejo de la Alhambra y Generalife</li>
+                    <li>Paseo nocturno por el Albaicín</li>
+                    <li>Vistas desde el Mirador de San Nicolás</li>
+                    <li>Ruta tradicional de tapas por el centro</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- MAPA -->
+        <section id="map-tab" class="tab-content">
+            <div id="map"></div>
+        </section>
+
+        <!-- EQUIPAJE -->
+        <section id="checklist" class="tab-content">
+            <form class="add-item-form" id="add-form">
+                <input type="text" id="new-item-input" placeholder="Añadir elemento..." required />
+                <button type="submit">+</button>
+            </form>
+            <div id="checklist-items"></div>
+        </section>
+
+        <!-- NOTAS -->
+        <section id="notes" class="tab-content">
+            <textarea id="notes-input" class="notes-area" placeholder="Escribe aquí tus notas del viaje (restaurantes, reservas, recordatorios)..."></textarea>
+            <div id="save-status" class="status-msg">Guardado automáticamente</div>
+        </section>
+    </main>
+
+    <!-- NAVEGACIÓN -->
+    <nav class="nav-bar">
+        <button class="nav-btn active" onclick="switchTab('itinerary')">
+            <svg viewBox="0 0 24 24"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2z"/></svg>
+            Itinerario
+        </button>
+        <button class="nav-btn" onclick="switchTab('map-tab')">
+            <svg viewBox="0 0 24 24"><path d="M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z"/></svg>
+            Mapa
+        </button>
+        <button class="nav-btn" onclick="switchTab('checklist')">
+            <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+            Equipaje
+        </button>
+        <button class="nav-btn" onclick="switchTab('notes')">
+            <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+            Notas
+        </button>
+    </nav>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    // Tab switching
+    let mapInitialized = false;
+    let map;
+
+    function switchTab(tabId) {
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+        
+        document.getElementById(tabId).classList.add('active');
+        event.currentTarget.classList.add('active');
+
+        if (tabId === 'map-tab') {
+            if (!mapInitialized) {
+                initMap();
+                mapInitialized = true;
+            } else {
+                setTimeout(() => map.invalidateSize(), 100);
+            }
+        }
+    }
+
+    // Map initialization
+    function initMap() {
+        const locations = [
+            { name: "Málaga (Días 1-5)", coords: [36.7213, -4.4214] },
+            { name: "Cádiz (Días 6-7)", coords: [36.5271, -6.2886] },
+            { name: "Granada (Días 8-9)", coords: [37.1773, -3.5986] }
+        ];
+
+        map = L.map('map').setView([36.7, -4.8], 8);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+
+        const latLngs = [];
+
+        locations.forEach(loc => {
+            latLngs.push(loc.coords);
+            L.marker(loc.coords).addTo(map)
+                .bindPopup(`<b>${loc.name}</b>`);
+        });
+
+        const polyline = L.polyline(latLngs, { color: '#38bdf8', weight: 4, opacity: 0.8, dashArray: '8, 8' }).addTo(map);
+        map.fitBounds(polyline.getBounds(), { padding: [30, 30] });
+    }
+
+    // Checklist logic
+    const defaultChecklist = [
+        { text: "DNI / Pasaporte", checked: false },
+        { text: "Cargadores y Powerbank", checked: false },
+        { text: "Ropa ligera y calzado cómodo", checked: false },
+        { text: "Gafas de sol y crema solar", checked: false },
+        { text: "Entradas Alhambra de Granada", checked: false }
+    ];
+
+    function getChecklist() {
+        const stored = localStorage.getItem('chestrips_checklist');
+        return stored ? JSON.parse(stored) : defaultChecklist;
+    }
+
+    function saveChecklist(items) {
+        localStorage.setItem('chestrips_checklist', JSON.stringify(items));
+        renderChecklist();
+    }
+
+    function renderChecklist() {
+        const items = getChecklist();
+        const container = document.getElementById('checklist-items');
+        container.innerHTML = '';
+
+        items.forEach((item, index) => {
+            const el = document.createElement('div');
+            el.className = `checklist-item ${item.checked ? 'checked' : ''}`;
+            el.innerHTML = `
+                <div class="checkbox"></div>
+                <span>${item.text}</span>
+            `;
+            el.onclick = () => {
+                items[index].checked = !items[index].checked;
+                saveChecklist(items);
+            };
+            container.appendChild(el);
+        });
+    }
+
+    document.getElementById('add-form').onsubmit = (e) => {
+        e.preventDefault();
+        const input = document.getElementById('new-item-input');
+        const text = input.value.trim();
+        if (text) {
+            const items = getChecklist();
+            items.push({ text, checked: false });
+            saveChecklist(items);
+            input.value = '';
+        }
+    };
+
+    // Notes logic
+    const notesInput = document.getElementById('notes-input');
+    const saveStatus = document.getElementById('save-status');
+
+    notesInput.value = localStorage.getItem('chestrips_notes') || '';
+
+    let timeout;
+    notesInput.oninput = () => {
+        saveStatus.innerText = 'Guardando...';
+        clearTimeout(timeout);
+        timeout = setTimeout(() => {
+            localStorage.setItem('chestrips_notes', notesInput.value);
+            saveStatus.innerText = 'Guardado automáticamente';
+        }, 500);
+    };
+
+    // Initial render
+    renderChecklist();
+</script>
+</body>
+</html>
