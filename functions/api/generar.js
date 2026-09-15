@@ -102,7 +102,7 @@ REGLAS ESTRICTAS:
 - La respuesta DEBE ser un JSON estrictamente válido, sin texto fuera de las llaves.
 `;
 
-    const model = env.GEMINI_MODEL || "gemini-2.5-flash-lite";
+    const model = env.GEMINI_MODEL || "gemini-3.5-flash-lite";
     const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${env.GEMINI_API_KEY}`;
 
     const geminiResponse = await fetch(geminiUrl, {
