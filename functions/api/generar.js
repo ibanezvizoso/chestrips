@@ -264,9 +264,9 @@ const masterTemplateHtml = `<!DOCTYPE html>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>ChesTrips Engine | Cuaderno de Ruta</title>
   <link rel="icon" type="image/svg+xml" href="/icon.svg">
-<link rel="apple-touch-icon" href="/icon-192.png">
-<link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#121413">
+  <link rel="apple-touch-icon" href="/icon-192.png">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#121413">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;700;800&family=JetBrains+Mono:wght@500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -355,7 +355,7 @@ const masterTemplateHtml = `<!DOCTYPE html>
       align-items: center;
     }
     .brand-title { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 1.2rem; }
-    .brand-title i { color: var(--primary); font-size: 1.05rem; }
+    .brand-title img { height: 26px; width: auto; display: block; }
     .brand-dates { font-size: 0.76rem; color: var(--muted); font-weight: 600; }
     .countdown-chip {
       background: var(--primary);
@@ -610,8 +610,9 @@ const masterTemplateHtml = `<!DOCTYPE html>
     <div class="header-inner">
       <div>
         <div class="brand-title" id="hTitle">
-  <img src="/logo-header.svg" alt="ChesTrips" style="height: 28px; width: auto; display: block;">
-</div>
+          <img src="/logo-header.svg" alt="ChesTrips">
+          <span>ChesTrips</span>
+        </div>
         <div class="brand-dates" id="hDates">--</div>
       </div>
       <div class="countdown-chip" id="hCountdown">Calculando...</div>
@@ -778,12 +779,12 @@ const masterTemplateHtml = `<!DOCTYPE html>
         if (!d) return;
 
         const hTitle = document.getElementById('hTitle');
-if (hTitle) {
-  hTitle.innerHTML = `
-    <img src="/logo-header.svg" alt="ChesTrips" style="height: 26px; width: auto; vertical-align: middle; margin-right: 8px;">
-    <span>\${d.tripTitle || 'ChesTrips'}</span>
-  `;
-}
+        if (hTitle) {
+          hTitle.innerHTML = \`
+            <img src="/logo-header.svg" alt="ChesTrips">
+            <span>\${d.tripTitle || 'ChesTrips'}</span>
+          \`;
+        }
         
         const hDates = document.getElementById('hDates');
         if (hDates) hDates.textContent = d.dates || '';
@@ -838,7 +839,7 @@ if (hTitle) {
           return;
         }
 
-        const cleanDateStr = String(startIso).trim().split(/[T\s]/)[0];
+        const cleanDateStr = String(startIso).trim().split(/[T\\s]/)[0];
         const parts = cleanDateStr.split('-');
         let targetDate;
 
