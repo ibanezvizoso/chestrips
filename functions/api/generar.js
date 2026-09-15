@@ -856,7 +856,7 @@ const masterTemplateHtml = `<!DOCTYPE html>
   const diffDays = Math.round((targetDate - today) / 86400000);
 
   if (diffDays > 0) {
-    chip.textContent = diffDays === 1 ? 'Falta 1 día' : `Faltan ${diffDays} días`;
+    chip.textContent = diffDays === 1 ? 'Falta 1 día' : 'Faltan ' + diffDays + ' días';
   } else if (diffDays === 0) {
     chip.textContent = '¡Comienza hoy!';
   } else {
