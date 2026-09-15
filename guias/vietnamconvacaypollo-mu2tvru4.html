@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ChesTrips Engine: Vietnam 14 Días | Alta Gama</title>
+    
+    <!-- Google Fonts: Fraunces (serif editorial), Plus Jakarta Sans (UI), JetBrains Mono (cifras) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400&family=JetBrains+Mono:wght@400;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome 6 Pro / Free -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <style>
+        :root {
+            --bg-main: #f8f6f0;
+            --bg-card: #ffffff;
+            --bg-card-alt: #f1ede3;
+            --text-primary: #1a201c;
+            --text-secondary: #5c6660;
+            --accent: #2e5a44; /* Verde selva profundo / Vietnam */
+            --accent-light: #e3ede6;
+            --accent-gold: #c29b38;
+            --border-color: #e2ddd0;
+            --shadow-sm: 0 2px 8px rgba(26, 32, 28, 0.04);
+            --shadow-md: 0 8px 24px rgba(26, 32, 28, 0.08);
+            --radius-lg: 20px;
+            --radius-md: 14px;
+            --radius-sm: 8px;
+            --font-serif: 'Fraunces', serif;
+            --font-sans: 'Plus Jakarta Sans', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-main: #121614;
+                --bg-card: #1b221e;
+                --bg-card-alt: #242c26;
+                --text-primary: #f0f2ef;
+                --text-secondary: #a3b2a8;
+                --accent: #4a8c6c;
+                --accent-light: #1e3328;
+                --accent-gold: #dfb243;
+                --border-color: #2c3630;
+                --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
+                --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.4);
+            }
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            line-height: 1.5;
+            padding-bottom: 90px; /* Espacio para el dock */
+            overflow-x: hidden;
+        }
+
+        /* HEADER & SEARCH */
+        header {
+            background-color: var(--bg-card);
+            padding: 1.25rem 1rem 0.75rem;
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .brand-title {
+            font-family: var(--font-serif);
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .brand-title span {
+            font-size: 0.75rem;
+            font-family: var(--font-mono);
+            background: var(--accent-light);
+            color: var(--accent);
+            padding: 0.2rem 0.5rem;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .search-container {
+            position: relative;
+            margin-bottom: 0.5rem;
+        }
+
+        .search-container input {
+            width: 100%;
+            padding: 0.6rem 1rem 0.6rem 2.4rem;
+            background: var(--bg-card-alt);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            font-family: var(--font-sans);
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .search-container input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-light);
+        }
+
+        .search-container i {
+            position: absolute;
+            left: 0.8rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* VISTAS (TAB VIEWS) */
+        .tab-view {
+            display: none;
+            padding: 1rem;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .tab-view.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* COMPONENTES GENERALES */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        h2.section-title {
+            font-family: var(--font-serif);
+            font-size: 1.4rem;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        h2.section-title i {
+            color: var(--accent);
+            font-size: 1.2rem;
+        }
+
+        /* 1. RESUMEN */
+        .countdown-banner {
+            background: linear-gradient(135deg, var(--accent), #1a382b);
+            color: #ffffff;
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            text-align: center;
+            margin-bottom: 1.2rem;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+        }
+
+        .countdown-banner::after {
+            content: '\f5af';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            position: absolute;
+            right: -20px;
+            bottom: -30px;
+            font-size: 8rem;
+            opacity: 0.08;
+        }
+
+        .countdown-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .countdown-item {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(4px);
+            padding: 0.6rem 0.3rem;
+            border-radius: var(--radius-sm);
+        }
+
+        .countdown-number {
+            font-family: var(--font-mono);
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        .countdown-label {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            opacity: 0.8;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+            margin-bottom: 1.2rem;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            padding: 1rem;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .stat-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: var(--accent-light);
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .stat-info h4 {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+
+        .stat-info p {
+            font-family: var(--font-mono);
+            font-size: 1.05rem;
+            font-weight: 600;
+        }
+
+        .route-thread {
+            display: flex;
+            gap: 0.75rem;
+            overflow-x: auto;
+            padding: 0.5rem 0.1rem 1rem;
+            scrollbar-width: none;
+        }
+
+        .route-thread::-webkit-scrollbar {
+            display: none;
+        }
+
+        .route-stop {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius-sm);
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.3rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .route-stop:hover {
+            border-color: var(--accent);
+            background: var(--accent-light);
+        }
+
+        .route-stop i {
+            color: var(--accent);
+            font-size: 1.1rem;
+        }
+
+        .route-stop span {
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        /* 2. ITINERARIO DÍA A DÍA */
+        .itinerary-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .btn-action {
+            background: var(--bg-card-alt);
+            border: 1px solid var(--border-color);
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            color: var(--text-primary);
+            transition: var(--transition);
+        }
+
+        .btn-action:hover {
+            background: var(--accent);
+            color: #fff;
+            border-color: var(--accent);
+        }
+
+        .day-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            margin-bottom: 1rem;
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .day-header {
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--bg-card);
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .day-badge-wrap {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .day-date-badge {
+            background: var(--accent);
+            color: #fff;
+            padding: 0.4rem 0.6rem;
+            border-radius: var(--radius-sm);
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .day-title-meta h3 {
+            font-size: 1rem;
+            font-weight: 700;
+        }
+
+        .day-title-meta p {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .day-toggle-icon {
+            color: var(--text-secondary);
+            transition: transform 0.3s ease;
+        }
+
+        .day-card.open .day-toggle-icon {
+            transform: rotate(180deg);
+        }
+
+        .day-body {
+            padding: 0 1rem 1.25rem;
+            border-top: 1px solid var(--border-color);
+            display: none;
+            background: var(--bg-main);
+        }
+
+        .day-card.open .day-body {
+            display: block;
+        }
+
+        .hotel-subcard {
+            background: var(--bg-card);
+            border-left: 3px solid var(--accent-gold);
+            padding: 0.75rem;
+            margin: 1rem 0;
+            border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .hotel-info h5 {
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+
+        .hotel-info p {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .map-btn {
+            background: var(--accent-light);
+            color: var(--accent);
+            padding: 0.4rem 0.7rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            white-space: nowrap;
+        }
+
+        .timeline-steps {
+            position: relative;
+            padding-left: 1.5rem;
+            margin: 1rem 0;
+        }
+
+        .timeline-steps::before {
+            content: '';
+            position: absolute;
+            left: 5px;
+            top: 5px;
+            bottom: 5px;
+            width: 2px;
+            background: var(--border-color);
+        }
+
+        .step-item {
+            position: relative;
+            margin-bottom: 1rem;
+        }
+
+        .step-item::before {
+            content: '';
+            position: absolute;
+            left: -1.5rem;
+            top: 6px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent);
+            border: 2px solid var(--bg-card);
+        }
+
+        .step-time {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .step-desc {
+            font-size: 0.9rem;
+            color: var(--text-primary);
+        }
+
+        .tip-card, .culture-card {
+            background: var(--bg-card);
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius-sm);
+            margin-top: 0.75rem;
+            font-size: 0.85rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .tip-card {
+            border-left: 3px solid #d97706;
+        }
+
+        .culture-card {
+            border-left: 3px solid #2563eb;
+        }
+
+        .card-label {
+            font-weight: 700;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            margin-bottom: 0.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        /* 3. MAPA */
+        #tripMap {
+            width: 100%;
+            height: 400px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+            z-index: 1;
+        }
+
+        /* 4. TRANSPORTE */
+        .transport-timeline {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .transport-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            padding: 1rem;
+            border-radius: var(--radius-md);
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .transport-icon {
+            background: var(--accent-light);
+            color: var(--accent);
+            width: 45px;
+            height: 45px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .transport-details h4 {
+            font-size: 0.95rem;
+            font-weight: 700;
+        }
+
+        .transport-details p {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-top: 0.2rem;
+        }
+
+        .transport-badge {
+            display: inline-block;
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            background: var(--bg-card-alt);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            margin-top: 0.4rem;
+        }
+
+        /* 5. GASTRONOMÍA */
+        .gourmet-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0.75rem;
+        }
+
+        .gourmet-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            padding: 0.85rem;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .gourmet-item.checked {
+            background: var(--accent-light);
+            border-color: var(--accent);
+        }
+
+        .gourmet-info h4 {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .gourmet-info p {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .gourmet-check {
+            width: 22px;
+            height: 22px;
+            border: 2px solid var(--border-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: transparent;
+            transition: var(--transition);
+        }
+
+        .gourmet-item.checked .gourmet-check {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #fff;
+        }
+
+        /* 6. HERRAMIENTAS Y COMUNICACIÓN */
+        .converter-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            padding: 1.25rem;
+            border-radius: var(--radius-md);
+            margin-bottom: 1rem;
+        }
+
+        .converter-input-group {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .converter-input-group input {
+            flex: 1;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            background: var(--bg-card-alt);
+            border-radius: var(--radius-sm);
+            font-family: var(--font-mono);
+            font-size: 1.1rem;
+            color: var(--text-primary);
+            outline: none;
+        }
+
+        .quick-chips {
+            display: flex;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+            margin-top: 0.5rem;
+        }
+
+        .chip {
+            background: var(--bg-card-alt);
+            border: 1px solid var(--border-color);
+            padding: 0.3rem 0.7rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-family: var(--font-mono);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .chip:hover {
+            background: var(--accent);
+            color: #fff;
+            border-color: var(--accent);
+        }
+
+        .flashcards-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+        }
+
+        .flashcard {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            padding: 1rem;
+            border-radius: var(--radius-sm);
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .flashcard:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        .flashcard .native {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 0.2rem;
+        }
+
+        .flashcard .phonetic {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+
+        .flashcard .meaning {
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-top: 0.4rem;
+        }
+
+        /* Giant Screen Modal */
+        #giantModal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .giant-content {
+            background: var(--bg-card);
+            width: 100%;
+            max-width: 400px;
+            padding: 2.5rem 1.5rem;
+            border-radius: var(--radius-lg);
+            text-align: center;
+            position: relative;
+        }
+
+        .giant-content .native {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        .giant-content .phonetic {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .giant-content .meaning {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 2rem;
+        }
+
+        .close-giant {
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: var(--radius-sm);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* 7. QUIZ CULTURAL */
+        .quiz-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            padding: 1.25rem;
+            border-radius: var(--radius-md);
+            margin-bottom: 1rem;
+        }
+
+        .quiz-options {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .quiz-option {
+            background: var(--bg-card-alt);
+            border: 1px solid var(--border-color);
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius-sm);
+            text-align: left;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .quiz-option.correct {
+            background: #d1fae5;
+            border-color: #10b981;
+            color: #065f46;
+        }
+
+        .quiz-option.incorrect {
+            background: #fee2e2;
+            border-color: #ef4444;
+            color: #991b1b;
+        }
+
+        /* 8. MALETA & DOCUMENTOS */
+        .progress-bar-container {
+            background: var(--bg-card-alt);
+            border-radius: 20px;
+            height: 10px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .progress-bar {
+            background: var(--accent);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.6rem 0;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        .checklist-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--accent);
+            cursor: pointer;
+        }
+
+        .checklist-item.checked span {
+            text-decoration: line-through;
+            color: var(--text-secondary);
+        }
+
+        /* 9. SOS & CONSULAR */
+        .sos-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.75rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .sos-btn {
+            background: #fee2e2;
+            border: 1px solid #fecaca;
+            color: #991b1b;
+            padding: 1rem 0.5rem;
+            border-radius: var(--radius-sm);
+            text-align: center;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.85rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .notepad textarea {
+            width: 100%;
+            height: 120px;
+            background: var(--bg-card-alt);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: 0.75rem;
+            color: var(--text-primary);
+            font-family: var(--font-sans);
+            font-size: 0.9rem;
+            outline: none;
+            resize: vertical;
+        }
+
+        /* BOTTOM DOCK (NAVEGACIÓN) */
+        .bottom-dock {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--bg-card);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-around;
+            padding: 0.5rem 0.25rem;
+            z-index: 999;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.06);
+        }
+
+        .dock-item {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.2rem;
+            font-size: 0.65rem;
+            font-weight: 600;
+            padding: 0.4rem;
+            cursor: pointer;
+            transition: var(--transition);
+            flex: 1;
+        }
+
+        .dock-item i {
+            font-size: 1.1rem;
+        }
+
+        .dock-item.active {
+            color: var(--accent);
+        }
+
+        /* UTILIDADES */
+        .badge-region {
+            background: var(--accent-light);
+            color: var(--accent);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-top">
+            <div class="brand-title">
+                <i class="fa-solid fa-compass"></i> ChesTrips <span>Vietnam 14D</span>
+            </div>
+        </div>
+        <div class="search-container">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="globalSearch" placeholder="Buscar templos, hoteles, trenes o restaurantes..." oninput="handleSearch(this.value)">
+        </div>
+    </header>
+
+    <!-- 1. RESUMEN -->
+    <div id="view-resumen" class="tab-view active">
+        <div class="countdown-banner">
+            <h3 style="font-family: var(--font-serif); font-size: 1.2rem;">Cuenta Atrás de la Aventura</h3>
+            <div class="countdown-grid">
+                <div class="countdown-item">
+                    <div class="countdown-number" id="cd-days">--</div>
+                    <div class="countdown-label">Días</div>
+                </div>
+                <div class="countdown-item">
+                    <div class="countdown-number" id="cd-hours">--</div>
+                    <div class="countdown-label">Horas</div>
+                </div>
+                <div class="countdown-item">
+                    <div class="countdown-number" id="cd-mins">--</div>
+                    <div class="countdown-label">Mins</div>
+                </div>
+                <div class="countdown-item">
+                    <div class="countdown-number" id="cd-secs">--</div>
