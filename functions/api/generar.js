@@ -338,33 +338,38 @@ const masterTemplateHtml = `<!DOCTYPE html>
     }
     h1, h2, h3, h4 { font-family: var(--font-display); letter-spacing: -0.015em; }
 
+    /* Encabezado sin sticky: desaparece naturalmente al hacer scroll */
     header {
       background: color-mix(in srgb, var(--paper) 92%, transparent);
-      backdrop-filter: blur(14px);
       border-bottom: 1px solid var(--border);
-      position: sticky;
-      top: 0;
-      z-index: 40;
     }
     .header-inner {
       max-width: 860px;
       margin: 0 auto;
-      padding: 12px 16px;
+      padding: 14px 16px;
       display: flex;
-      justify-content: space-between;
+      justify-content: flex-start;
       align-items: center;
     }
-    .brand-title { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 1.2rem; }
-    .brand-title img { height: 26px; width: auto; display: block; }
-    .brand-dates { font-size: 0.76rem; color: var(--muted); font-weight: 600; }
-    .countdown-chip {
-      background: var(--primary);
-      color: #ffffff;
-      font-size: 0.74rem;
-      font-weight: 700;
-      padding: 6px 13px;
-      border-radius: 999px;
-      box-shadow: var(--shadow-sm);
+    .brand-title { 
+      display: flex; 
+      align-items: center; 
+      gap: 12px; 
+      font-weight: 800; 
+      font-size: 1.35rem; 
+      margin-left: 10px;
+    }
+    .brand-title img { 
+      height: 34px; 
+      width: auto; 
+      display: block; 
+    }
+    .brand-dates { 
+      font-size: 0.78rem; 
+      color: var(--muted); 
+      font-weight: 600; 
+      margin-left: 10px;
+      margin-top: 3px;
     }
 
     .top-controls { max-width: 860px; margin: 12px auto 0; padding: 0 16px; }
@@ -605,7 +610,7 @@ const masterTemplateHtml = `<!DOCTYPE html>
     </div>
   </div>
 
-  <!-- CABECERA -->
+  <!-- CABECERA (Desaparece en el scroll, sin contador) -->
   <header>
     <div class="header-inner">
       <div>
@@ -615,7 +620,6 @@ const masterTemplateHtml = `<!DOCTYPE html>
         </div>
         <div class="brand-dates" id="hDates">--</div>
       </div>
-      <div class="countdown-chip" id="hCountdown">Calculando...</div>
     </div>
   </header>
 
@@ -752,7 +756,7 @@ const masterTemplateHtml = `<!DOCTYPE html>
     </section>
   </main>
 
-  <!-- BARRA DE NAVEGACIÓN INFERIOR (9 TABS COMPLETAS) -->
+  <!-- BARRA DE NAVEGACIÓN INFERIOR -->
   <nav class="bottom-dock">
     <button class="dock-tab-btn active" onclick="app.tab('resumen', this)"><i class="fa-solid fa-compass"></i><span>Resumen</span></button>
     <button class="dock-tab-btn" onclick="app.tab('itinerario', this)"><i class="fa-solid fa-calendar-days"></i><span>Ruta</span></button>
@@ -789,7 +793,6 @@ const masterTemplateHtml = `<!DOCTYPE html>
         const hDates = document.getElementById('hDates');
         if (hDates) hDates.textContent = d.dates || '';
 
-        this.initCountdown(d.startDateISO);
         this.renderStats(d.stats);
         this.renderFlights(d.flights);
         this.renderQuickFacts(d.quickFacts);
@@ -828,45 +831,6 @@ const masterTemplateHtml = `<!DOCTYPE html>
           setTimeout(() => this.initMap(), 200);
         }
         window.scrollTo({ top: 0, behavior: 'smooth' });
-      },
-
-      initCountdown(startIso) {
-        const chip = document.getElementById('hCountdown');
-        if (!chip) return;
-
-        if (!startIso) {
-          chip.textContent = 'En ruta';
-          return;
-        }
-
-        const cleanDateStr = String(startIso).trim().split(/[T\\s]/)[0];
-        const parts = cleanDateStr.split('-');
-        let targetDate;
-
-        if (parts.length === 3) {
-          targetDate = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
-        } else {
-          targetDate = new Date(startIso);
-        }
-
-        if (isNaN(targetDate.getTime())) {
-          chip.textContent = 'En ruta';
-          return;
-        }
-
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        targetDate.setHours(0, 0, 0, 0);
-
-        const diffDays = Math.round((targetDate - today) / 86400000);
-
-        if (diffDays > 0) {
-          chip.textContent = diffDays === 1 ? 'Falta 1 día' : ('Faltan ' + diffDays + ' días');
-        } else if (diffDays === 0) {
-          chip.textContent = '¡Comienza hoy!';
-        } else {
-          chip.textContent = '¡En curso!';
-        }
       },
 
       renderStats(s) {
