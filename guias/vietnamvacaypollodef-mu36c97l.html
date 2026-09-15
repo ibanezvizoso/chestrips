@@ -1,0 +1,1617 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>ChesTrips Engine | Cuaderno de Ruta</title>
+  <link rel="icon" type="image/svg+xml" href="/icon.svg">
+  <link rel="apple-touch-icon" href="/icon-192.png">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#121413">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;700;800&family=JetBrains+Mono:wght@500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <style>
+    :root {
+      --paper: #faf7f2;
+      --paper-card: #ffffff;
+      --paper-muted: #f3ede2;
+      --paper-subtle: #ece4d5;
+      --ink: #1a1c1a;
+      --muted: #626863;
+      --border: #e6dec9;
+      --border-subtle: #ede5d7;
+
+      --primary: #bd3126;
+      --primary-subtle: #fbeae8;
+      --secondary: #2f5a38;
+      --secondary-subtle: #e5efe7;
+      --accent: #ad7919;
+      --accent-subtle: #f8f1de;
+
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --shadow-sm: 0 2px 5px rgba(30, 27, 24, 0.04);
+      --shadow-md: 0 8px 20px -4px rgba(30, 27, 24, 0.08);
+
+      --font-display: 'Fraunces', Georgia, serif;
+      --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --paper: #121413;
+        --paper-card: #1c201e;
+        --paper-muted: #242826;
+        --paper-subtle: #2d3330;
+        --ink: #f3f4f3;
+        --muted: #a1a8a3;
+        --border: #2d332f;
+        --border-subtle: #252b27;
+
+        --primary: #e05246;
+        --primary-subtle: rgba(224, 82, 70, 0.16);
+        --secondary: #6cb07e;
+        --secondary-subtle: rgba(108, 176, 126, 0.15);
+        --accent: #e5b27d;
+        --accent-subtle: rgba(229, 178, 125, 0.15);
+
+        --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.35);
+        --shadow-md: 0 10px 24px -6px rgba(0, 0, 0, 0.55);
+      }
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--font-sans);
+      background-color: var(--paper);
+      color: var(--ink);
+      line-height: 1.6;
+      padding-bottom: 115px;
+    }
+    h1, h2, h3, h4 { font-family: var(--font-display); letter-spacing: -0.015em; }
+
+    /* Encabezado sin sticky: desaparece naturalmente al hacer scroll */
+    header {
+      background: color-mix(in srgb, var(--paper) 92%, transparent);
+      border-bottom: 1px solid var(--border);
+    }
+    .header-inner {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 14px 16px;
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+    }
+    .brand-title { 
+      display: flex; 
+      align-items: center; 
+      gap: 12px; 
+      font-weight: 800; 
+      font-size: 1.35rem; 
+      margin-left: 10px;
+    }
+    .brand-title img { 
+      height: 44px; 
+      width: auto; 
+      display: block; 
+    }
+    .brand-dates { 
+      font-size: 0.78rem; 
+      color: var(--muted); 
+      font-weight: 600; 
+      margin-left: 10px;
+      margin-top: 3px;
+    }
+    .share-btn {
+  background: var(--paper-card);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+}
+.share-btn:active {
+  background: var(--secondary-subtle);
+  color: var(--secondary);
+}
+
+    .top-controls { max-width: 860px; margin: 12px auto 0; padding: 0 16px; }
+    .search-box { position: relative; display: flex; align-items: center; }
+    .search-box i { position: absolute; left: 14px; color: var(--muted); font-size: 0.88rem; }
+    .search-box input {
+      width: 100%;
+      padding: 11px 14px 11px 40px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      background: var(--paper-card);
+      color: var(--ink);
+      font-size: 0.9rem;
+      outline: none;
+      box-shadow: var(--shadow-sm);
+    }
+
+    main { max-width: 860px; margin: 16px auto; padding: 0 16px; }
+    .tab-view { display: none; }
+    .tab-view.active { display: block; animation: tabFade 0.2s ease-out forwards; }
+    @keyframes tabFade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+    .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px; }
+    .stat-card {
+      background: var(--paper-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 12px 6px;
+      text-align: center;
+      box-shadow: var(--shadow-sm);
+    }
+    .stat-num { font-family: var(--font-display); font-weight: 700; font-size: 1.45rem; color: var(--primary); line-height: 1; }
+    .stat-lbl { font-size: 0.68rem; color: var(--muted); font-weight: 800; margin-top: 5px; }
+
+    .route-thread {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 2px 2px 12px;
+      margin-bottom: 14px;
+      scrollbar-width: none;
+    }
+    .route-thread::-webkit-scrollbar { display: none; }
+    .thread-stop {
+      flex: 0 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      cursor: pointer;
+      padding: 10px 14px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      background: var(--paper-card);
+      min-width: 82px;
+      box-shadow: var(--shadow-sm);
+    }
+    .thread-stop:active { background: var(--secondary-subtle); border-color: var(--secondary); }
+    .thread-stop i { font-size: 1.1rem; color: var(--secondary); }
+    .thread-stop span { font-size: 0.72rem; font-weight: 700; white-space: nowrap; }
+
+    /* ACORDEÓN DÍAS */
+    .day-card {
+      background: var(--paper-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      margin-bottom: 12px;
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+    }
+    .day-card.open { border-color: var(--secondary); }
+    .day-header { padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none; }
+    .day-badge {
+      font-family: var(--font-mono);
+      background: var(--secondary-subtle);
+      color: var(--secondary);
+      font-weight: 700;
+      font-size: 0.78rem;
+      padding: 5px 8px;
+      border-radius: var(--radius-sm);
+      min-width: 72px;
+      text-align: center;
+    }
+    .day-title-wrap { margin-left: 12px; }
+    .day-title { font-weight: 700; font-size: 0.95rem; line-height: 1.35; }
+    .day-meta { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+    .day-chevron { color: var(--muted); transition: transform 0.25s ease; font-size: 0.85rem; }
+    .day-card.open .day-chevron { transform: rotate(180deg); color: var(--secondary); }
+    .day-body { display: none; padding: 14px 16px 16px; border-top: 1px solid var(--border-subtle); font-size: 0.9rem; }
+    .day-card.open .day-body { display: block; }
+
+    .history-box {
+      background: var(--secondary-subtle);
+      border-left: 4px solid var(--secondary);
+      border-radius: 4px;
+      padding: 10px 12px;
+      font-size: 0.84rem;
+      margin-bottom: 12px;
+      line-height: 1.45;
+    }
+    .hotel-subcard {
+      background: var(--paper-muted);
+      border: 1px dashed var(--secondary);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      margin-bottom: 12px;
+    }
+    ul.clean-steps { list-style: none; margin: 10px 0; }
+    ul.clean-steps li { position: relative; padding-left: 18px; margin-bottom: 8px; font-size: 0.88rem; line-height: 1.5; }
+    ul.clean-steps li::before { content: "•"; position: absolute; left: 3px; color: var(--secondary); font-weight: 800; font-size: 1.1rem; }
+
+    .tip-card {
+      background: var(--accent-subtle);
+      border-left: 4px solid var(--accent);
+      border-radius: 4px;
+      padding: 10px 12px;
+      margin-top: 10px;
+      font-size: 0.84rem;
+    }
+
+    .action-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--paper-card);
+      border: 1px solid var(--border);
+      color: var(--ink);
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      text-decoration: none;
+      margin-top: 6px;
+      cursor: pointer;
+    }
+
+    /* MAPA LEAFLET */
+    #mapContainer {
+      height: 480px;
+      width: 100%;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 16px;
+    }
+
+    /* PROGRESO & CHECKLISTS */
+    .progress-wrap { background: var(--paper-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 14px 16px; margin-bottom: 16px; }
+    .progress-track { height: 9px; background: var(--paper-muted); border-radius: 999px; overflow: hidden; margin-top: 8px; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg, var(--secondary), var(--primary)); width: 0%; transition: width 0.35s ease; }
+    .check-box-group { background: var(--paper-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 15px 18px; margin-bottom: 14px; box-shadow: var(--shadow-sm); }
+    .check-box-group h3 { font-size: 0.98rem; font-weight: 700; margin-bottom: 12px; color: var(--secondary); display: flex; align-items: center; gap: 8px; }
+    .check-line { display: flex; align-items: flex-start; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--border-subtle); cursor: pointer; }
+    .check-line:last-child { border-bottom: none; }
+    .check-line input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--secondary); cursor: pointer; margin-top: 2px; }
+    .check-line.checked-done label { text-decoration: line-through; color: var(--muted); }
+
+    /* CONVERSOR & FRASES */
+    .fx-widget { background: var(--paper-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 16px; margin-bottom: 14px; box-shadow: var(--shadow-sm); }
+    .fx-row { display: flex; align-items: center; gap: 10px; }
+    .fx-col { flex: 1; }
+    .fx-col input { width: 100%; padding: 10px; font-family: var(--font-mono); font-size: 1rem; background: var(--paper-muted); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--ink); outline: none; }
+    .fx-quick-chips { display: flex; gap: 6px; overflow-x: auto; margin-top: 10px; scrollbar-width: none; }
+    .fx-chip { background: var(--paper-muted); border: 1px solid var(--border); font-size: 0.75rem; font-weight: 700; padding: 5px 10px; border-radius: 999px; cursor: pointer; white-space: nowrap; }
+
+    .flashcard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+    .flashcard { background: var(--paper-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 13px; cursor: pointer; box-shadow: var(--shadow-sm); }
+    .giant-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center; padding: 20px; }
+    .giant-modal.active { display: flex; }
+    .giant-card { background: #ffffff; color: #111; padding: 30px 22px; border-radius: 22px; text-align: center; width: 380px; max-width: 95%; }
+    .giant-local { font-size: 2.1rem; font-weight: 800; color: var(--primary); margin: 10px 0; font-family: var(--font-display); }
+    .giant-phonetic { font-family: var(--font-mono); font-size: 1rem; color: #555; }
+
+    /* Tarjeta de vuelos */
+    .flight-card { background: var(--paper-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 16px; margin-bottom: 16px; box-shadow: var(--shadow-sm); }
+    .flight-segment { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px dashed var(--border); }
+    .flight-segment:last-child { border-bottom: none; padding-bottom: 0; }
+    .flight-code { font-family: var(--font-mono); font-size: 0.82rem; font-weight: 700; color: var(--primary); }
+    .flight-route { font-size: 0.88rem; font-weight: 700; margin-left: 6px; }
+    .flight-time { font-size: 0.78rem; color: var(--muted); font-weight: 500; }
+
+    /* Fact Grid 2x2 */
+    .fact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+    .fact-card { background: var(--paper-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 13px 14px; box-shadow: var(--shadow-sm); }
+    .fact-card i { color: var(--secondary); margin-bottom: 6px; display: block; font-size: 1.1rem; }
+    .fact-card h5 { font-size: 0.86rem; font-weight: 800; margin-bottom: 3px; }
+    .fact-card p { font-size: 0.78rem; color: var(--muted); line-height: 1.4; }
+
+    /* Chip de sugerencia */
+    .suggestion-chip { background: var(--accent-subtle); color: var(--accent); font-size: 0.68rem; font-weight: 800; padding: 2px 7px; border-radius: 4px; text-transform: uppercase; margin-right: 6px; }
+
+    /* Curiosidades culturales */
+    .curiosity-card { background: var(--paper-card); border: 1px solid var(--border); border-left: 5px solid var(--primary); border-radius: var(--radius-sm); padding: 14px 16px; margin-bottom: 12px; box-shadow: var(--shadow-sm); }
+    .curiosity-card h5 { font-size: 0.92rem; font-weight: 800; margin-bottom: 5px; display: flex; align-items: center; gap: 8px; }
+    .curiosity-card p { font-size: 0.85rem; color: var(--muted); line-height: 1.5; }
+
+    /* QUIZ */
+    .quiz-card { background: var(--paper-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 16px; margin-bottom: 12px; box-shadow: var(--shadow-sm); }
+    .quiz-q { font-size: 0.95rem; font-weight: 700; margin-bottom: 10px; }
+    .quiz-opts { display: flex; flex-direction: column; gap: 8px; }
+    .quiz-btn { background: var(--paper-muted); border: 1px solid var(--border); color: var(--ink); padding: 10px 12px; border-radius: var(--radius-sm); font-size: 0.86rem; text-align: left; cursor: pointer; font-family: inherit; }
+    .quiz-btn.correct { background: var(--secondary-subtle); border-color: var(--secondary); color: var(--secondary); font-weight: 700; }
+    .quiz-btn.wrong { background: var(--primary-subtle); border-color: var(--primary); color: var(--primary); font-weight: 700; }
+    .quiz-exp { display: none; margin-top: 8px; font-size: 0.82rem; color: var(--muted); padding: 8px; background: var(--paper); border-radius: var(--radius-sm); }
+
+    /* BOTTOM DOCK */
+    .bottom-dock {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: color-mix(in srgb, var(--paper) 95%, transparent);
+      backdrop-filter: blur(16px);
+      border-top: 1px solid var(--border);
+      display: flex;
+      overflow-x: auto;
+      padding: 6px 4px max(6px, env(safe-area-inset-bottom));
+      z-index: 50;
+      scrollbar-width: none;
+    }
+    .bottom-dock::-webkit-scrollbar { display: none; }
+    .dock-tab-btn {
+      background: none; border: none; color: var(--muted);
+      display: flex; flex-direction: column; align-items: center; gap: 3px;
+      font-size: 0.65rem; font-weight: 700; cursor: pointer; padding: 6px 12px; flex: 0 0 auto; font-family: inherit;
+    }
+    .dock-tab-btn.active { color: var(--secondary); }
+  </style>
+</head>
+<body>
+
+  <!-- MODAL GIGANTE DE PANTALLA -->
+  <div class="giant-modal" id="giantModal" onclick="app.closeModal()">
+    <div class="giant-card" onclick="event.stopPropagation()">
+      <div style="font-size:0.75rem; font-weight:800; color:#888; text-transform:uppercase;" id="gModalCat">TRADUCCIÓN</div>
+      <div class="giant-local" id="gModalLocal">--</div>
+      <div class="giant-phonetic" id="gModalPhonetic">--</div>
+      <div style="font-size:1.05rem; font-weight:700; margin-top:10px;" id="gModalSpanish">--</div>
+      <button class="action-btn" style="margin-top:16px;" onclick="app.closeModal()"><i class="fa-solid fa-xmark"></i> Cerrar</button>
+    </div>
+  </div>
+
+  <!-- CABECERA (Desaparece en el scroll, sin contador) -->
+  <header>
+  <div class="header-inner">
+    <div>
+      <div class="brand-title" id="hTitle">
+        <img src="/logo-header.svg" alt="ChesTrips">
+        <span>ChesTrips</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px; margin-left: 10px; margin-top: 3px;">
+        <div class="brand-dates" id="hDates" style="margin: 0;">--</div>
+        <!-- Botón para compartir/copiar enlace -->
+        <button class="share-btn" onclick="app.shareTrip()" title="Compartir guía">
+          <i class="fa-solid fa-arrow-up-from-bracket"></i> <span id="shareText">Compartir</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</header>
+
+  <!-- BUSCADOR -->
+  <div class="top-controls">
+    <div class="search-box">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="search" id="globalSearch" placeholder="Buscar paradas, platos, templos, hoteles..." oninput="app.search(this.value)">
+    </div>
+  </div>
+
+  <main>
+    <!-- TAB 1: RESUMEN -->
+    <section id="tab-resumen" class="tab-view active">
+      <div class="stat-grid" id="statGrid"></div>
+      <div class="route-thread" id="routeThread"></div>
+      
+      <div class="check-box-group" id="weatherContainer" style="margin-bottom:14px;">
+        <h3><i class="fa-solid fa-cloud-sun"></i> Clima & Estacionalidad</h3>
+        <div id="weatherList" style="font-size:0.86rem; color:var(--muted);"></div>
+      </div>
+      <div id="flightsContainer"></div>
+      <div class="fact-grid" id="quickFactsGrid"></div>
+      <div class="check-box-group">
+        <h3><i class="fa-solid fa-ticket"></i> Transportes & Logística Clave</h3>
+        <div id="transportsList"></div>
+      </div>
+    </section>
+
+    <!-- TAB 2: ITINERARIO -->
+    <section id="tab-itinerario" class="tab-view">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <span style="font-size:0.8rem; font-weight:800; color:var(--muted); text-transform:uppercase;">Ruta Día a Día</span>
+        <button class="action-btn" onclick="app.toggleAllDays()">Expandir / Plegar todo</button>
+      </div>
+      <div id="itineraryContainer"></div>
+    </section>
+
+    <!-- TAB 3: MAPA INTERACTIVO -->
+    <section id="tab-mapa" class="tab-view">
+      <div style="margin-bottom:12px;">
+        <h2 style="font-size:1.35rem; font-weight:700;">Ruta Georreferenciada</h2>
+        <p style="font-size:0.85rem; color:var(--muted);">Trazado de paradas con polilínea de conexión en vivo.</p>
+      </div>
+      <div id="mapContainer"></div>
+    </section>
+
+    <!-- TAB 4: GOURMET -->
+    <section id="tab-gourmet" class="tab-view">
+      <div class="progress-wrap">
+        <div style="display:flex; justify-content:space-between; font-size:0.84rem; font-weight:700;">
+          <span>Pasaporte Culinario</span>
+          <span id="gourmetLabel">0 / 0 (0%)</span>
+        </div>
+        <div class="progress-track"><div class="progress-fill" id="gourmetBar"></div></div>
+      </div>
+      <div class="check-box-group">
+        <h3><i class="fa-solid fa-utensils"></i> Especialidades que no te puedes perder</h3>
+        <div id="gourmetList"></div>
+      </div>
+    </section>
+
+    <!-- TAB 5: ETIQUETA & CULTURA -->
+    <section id="tab-etiqueta" class="tab-view">
+      <div style="margin-bottom:14px;">
+        <h2 style="font-size:1.35rem; font-weight:700;">Curiosidades & Costumbres</h2>
+        <p style="font-size:0.85rem; color:var(--muted);">Secretos históricos, leyendas y normas de protocolo.</p>
+      </div>
+      <div id="curiositiesList"></div>
+      <div style="margin-top:20px; margin-bottom:12px;">
+        <h3 style="font-size:1.1rem; font-weight:700;">Protocolo & Etiqueta Diaria</h3>
+      </div>
+      <div id="etiquetteList"></div>
+    </section>
+
+    <!-- TAB 6: HERRAMIENTAS & IDIOMA -->
+    <section id="tab-herramientas" class="tab-view">
+      <div class="fx-widget">
+        <h4 style="font-size:0.9rem; font-weight:700; margin-bottom:8px;"><i class="fa-solid fa-money-bill-transfer"></i> Conversor de Divisa</h4>
+        <div class="fx-row">
+          <div class="fx-col"><label style="font-size:0.75rem; font-weight:800; color:var(--muted);" id="fxLabelLocal">LOCAL</label><input type="number" id="fxLocal" oninput="app.calcFxLocal()"></div>
+          <i class="fa-solid fa-arrow-right-arrow-left" style="color:var(--muted); font-size:0.8rem; margin-top:14px;"></i>
+          <div class="fx-col"><label style="font-size:0.75rem; font-weight:800; color:var(--muted);">EUR (€)</label><input type="number" id="fxEur" oninput="app.calcFxEur()"></div>
+        </div>
+        <div class="fx-quick-chips" id="fxChips"></div>
+      </div>
+
+      <div style="font-size:0.8rem; font-weight:800; color:var(--muted); text-transform:uppercase; margin-bottom:6px;">Toca una tarjeta para verla en grande</div>
+      <div class="flashcard-grid" id="fcGrid"></div>
+    </section>
+
+    <!-- TAB 7: QUIZ CULTURAL -->
+    <section id="tab-quiz" class="tab-view">
+      <div class="stat-card" style="margin-bottom:14px; text-align:left; padding:12px 16px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-weight:800; font-size:0.9rem;">Puntuación del Quiz:</span>
+          <span class="stat-num" id="quizScoreText" style="font-size:1.2rem;">0 / 0</span>
+        </div>
+      </div>
+      <div id="quizContainer"></div>
+    </section>
+
+    <!-- TAB 8: MALETA -->
+    <section id="tab-maleta" class="tab-view">
+      <div class="progress-wrap">
+        <div style="display:flex; justify-content:space-between; font-size:0.84rem; font-weight:700;">
+          <span>Equipaje listo</span>
+          <span id="luggageLabel">0 / 0 (0%)</span>
+        </div>
+        <div class="progress-track"><div class="progress-fill" id="luggageBar"></div></div>
+      </div>
+      <div class="check-box-group">
+        <h3><i class="fa-solid fa-suitcase-rolling"></i> Checklist Preparativos</h3>
+        <div id="packingList"></div>
+      </div>
+    </section>
+
+    <!-- TAB 9: SOS & NOTAS -->
+    <section id="tab-sos" class="tab-view">
+      <div style="background:var(--primary-subtle); border:1px solid var(--primary); border-radius:var(--radius-md); padding:16px; margin-bottom:14px;">
+        <h3 style="color:var(--primary); font-size:1rem; font-weight:700; margin-bottom:6px;"><i class="fa-solid fa-shield-halved"></i> Asistencia Consular</h3>
+        <p style="font-size:0.86rem;" id="sosEmbassy">--</p>
+      </div>
+
+      <div class="stat-card" style="text-align:left; padding:16px; margin-bottom:14px;">
+        <h4 style="font-size:0.92rem; font-weight:700; margin-bottom:8px;"><i class="fa-solid fa-phone"></i> Teléfonos de Emergencia</h4>
+        <div id="sosPhones" style="font-size:0.86rem;"></div>
+      </div>
+
+      <div class="stat-card" style="text-align:left; padding:16px;">
+        <h4 style="font-size:0.92rem; font-weight:700; margin-bottom:6px;"><i class="fa-solid fa-note-sticky"></i> Bloc de Notas Offline</h4>
+        <textarea id="localNotes" style="width:100%; min-height:100px; border:1px solid var(--border); border-radius:var(--radius-sm); background:var(--paper-muted); color:var(--ink); padding:8px; font-family:inherit; font-size:0.85rem;" placeholder="Pólizas, reservas o apuntes..." oninput="app.saveNotes()"></textarea>
+      </div>
+    </section>
+  </main>
+
+  <!-- BARRA DE NAVEGACIÓN INFERIOR -->
+  <nav class="bottom-dock">
+    <button class="dock-tab-btn active" onclick="app.tab('resumen', this)"><i class="fa-solid fa-compass"></i><span>Resumen</span></button>
+    <button class="dock-tab-btn" onclick="app.tab('itinerario', this)"><i class="fa-solid fa-calendar-days"></i><span>Ruta</span></button>
+    <button class="dock-tab-btn" onclick="app.tab('mapa', this)"><i class="fa-solid fa-map-location-dot"></i><span>Mapa</span></button>
+    <button class="dock-tab-btn" onclick="app.tab('gourmet', this)"><i class="fa-solid fa-bowl-rice"></i><span>Gourmet</span></button>
+    <button class="dock-tab-btn" onclick="app.tab('etiqueta', this)"><i class="fa-solid fa-handshake"></i><span>Etiqueta</span></button>
+    <button class="dock-tab-btn" onclick="app.tab('herramientas', this)"><i class="fa-solid fa-toolbox"></i><span>Tarjetas</span></button>
+    <button class="dock-tab-btn" onclick="app.tab('quiz', this)"><i class="fa-solid fa-circle-question"></i><span>Quiz</span></button>
+    <button class="dock-tab-btn" onclick="app.tab('maleta', this)"><i class="fa-solid fa-list-check"></i><span>Maleta</span></button>
+    <button class="dock-tab-btn" onclick="app.tab('sos', this)"><i class="fa-solid fa-kit-medical"></i><span>SOS</span></button>
+  </nav>
+
+  <script>
+    window.__TRIP_DATA__ = {
+  "tripTitle": "Vietnam Imperial y Natural: Del Delta del Mekong a la Bahía de Ha Long",
+  "dates": "12 Mar – 24 Mar · 13 días",
+  "startDateISO": "2025-03-12",
+  "badgeText": "Vietnam · 13 Días · Cultura y Naturaleza",
+  "stats": {
+    "days": 13,
+    "cities": 5,
+    "hotels": 4,
+    "flights": 2
+  },
+  "flights": [
+    {
+      "locator": "VN8321",
+      "code": "VN037",
+      "route": "MAD → SGN",
+      "time": "Mié 12 Mar · 15:05 - 11:30 (+1)"
+    },
+    {
+      "locator": "VN9842",
+      "code": "VN154",
+      "route": "DAD → HAN",
+      "time": "Dom 19 Mar · 10:15 - 11:35"
+    }
+  ],
+  "quickFacts": [
+    {
+      "icon": "fa-train",
+      "title": "Transporte Clave",
+      "desc": "Usa aplicaciones como Grab para moverte por las ciudades de forma segura y al mejor precio sin regatear."
+    },
+    {
+      "icon": "fa-credit-card",
+      "title": "Pagos & Dinero",
+      "desc": "Lleva efectivo (Dong vietnamita) para mercados callejeros y pequeños comercios; la tarjeta se acepta en hoteles y restaurantes."
+    },
+    {
+      "icon": "fa-plug",
+      "title": "Enchufes & Red",
+      "desc": "Clavijas tipo A, C y F (220V). Compra una eSIM a la llegada para tener datos móviles estables."
+    },
+    {
+      "icon": "fa-trash-can",
+      "title": "Costumbre Urbana",
+      "desc": "Cruzar la calle en ciudades como Hanoi o Ho Chi Minh es un arte: camina a paso constante y sin movimientos bruscos."
+    }
+  ],
+  "currency": {
+    "code": "VND",
+    "symbol": "₫",
+    "rateToEUR": 27150.0,
+    "quickChips": [
+      20000,
+      50000,
+      100000,
+      200000,
+      500000
+    ]
+  },
+  "routeThread": [
+    {
+      "name": "Ho Chi Minh",
+      "icon": "fa-building",
+      "query": "ho chi minh"
+    },
+    {
+      "name": "Hoi An",
+      "icon": "fa-store",
+      "query": "hoi an"
+    },
+    {
+      "name": "Hue",
+      "icon": "fa-crown",
+      "query": "hue"
+    },
+    {
+      "name": "Hanoi",
+      "icon": "fa-landmark",
+      "query": "hanoi"
+    },
+    {
+      "name": "Ha Long",
+      "icon": "fa-water",
+      "query": "ha long bay"
+    }
+  ],
+  "weatherTable": [
+    {
+      "region": "Sur (Ho Chi Minh / Mekong)",
+      "temp": "25–34°C",
+      "desc": "Cálido, seco y soleado."
+    },
+    {
+      "region": "Centro (Hue / Hoi An)",
+      "temp": "22–29°C",
+      "desc": "Agradable, ideal para recorrer cascos históricos."
+    },
+    {
+      "region": "Norte (Hanoi / Ha Long)",
+      "temp": "18–24°C",
+      "desc": "Clima fresco con neblinas matutinas en la bahía."
+    }
+  ],
+  "mapCenter": [16.0, 107.0],
+  "mapZoom": 6,
+  "days": [
+    {
+      "day": 1,
+      "dateBadge": "12 MAR",
+      "title": "Salida: Vuelo Internacional hacia Ho Chi Minh",
+      "isSuggestion": false,
+      "meta": "Madrid · Tránsito · Vuelo",
+      "lat": 40.4168,
+      "lng": -3.7038,
+      "hotel": "Vuelo a bordo",
+      "hotelAddress": "En tránsito",
+      "hotelMapsUrl": "https://maps.google.com/?q=Madrid+Barajas",
+      "historyContext": "Comienza el viaje hacia la antigua Indochina, cruzando continentes para adentrarse en la historia milenaria del sudeste asiático.",
+      "steps": [
+        "15:05h: Presentación en el Aeropuerto Adolfo Suárez Madrid-Barajas.",
+        "Trámites de facturación y embarque en el vuelo con destino Ho Chi Minh."
+      ],
+      "cultureTip": "Los vuelos de larga distancia hacia Asia cruzan múltiples husos horarios; hidrátate bien durante el trayecto.",
+      "practicalTip": "Lleva los códigos de reserva de los vuelos y el pasaporte a mano en tu equipaje de mano."
+    },
+    {
+      "day": 2,
+      "dateBadge": "13 MAR",
+      "title": "Llegada a Ho Chi Minh y PrimerContacto",
+      "isSuggestion": false,
+      "meta": "Ho Chi Minh · Llegada · Hotel",
+      "lat": 10.7769,
+      "lng": 106.7009,
+      "hotel": "Liberty Central Saigon Centre",
+      "hotelAddress": "59 Pasteur, District 1, Ho Chi Minh",
+      "hotelMapsUrl": "https://maps.google.com/?q=Liberty+Central+Saigon+Centre",
+      "historyContext": "Antiguamente conocida como Saigón, la ciudad fue capital de la Cochinchina francesa y posteriormente de la República de Vietnam. Su arquitectura colonial convive con el dinamismo económico actual.",
+      "steps": [
+        "11:30h: Aterrizaje en el Aeropuerto Internacional de Tan Son Nhat (SGN).",
+        "Trámites de visado y recogida de equipaje.",
+        "Traslado al hotel en el Distrito 1 para el check-in y descanso inicial.",
+        "Paseo vespertino por la animada zona de la Ópera y la calle Nguyen Hue."
+      ],
+      "cultureTip": "El saludo tradicional en Vietnam es una ligera inclinación de cabeza, aunque en zonas turísticas el apretón de manos occidental es común.",
+      "practicalTip": "Cambia una pequeña cantidad de dinero en el aeropuerto o usa cajeros fiables para tus primeros gastos."
+    },
+    {
+      "day": 3,
+      "dateBadge": "14 MAR",
+      "title": "Túneles de Cu Chi y Ciudad de Ho Chi Minh",
+      "isSuggestion": false,
+      "meta": "Ho Chi Minh · Historia · Cultura",
+      "lat": 10.9472,
+      "lng": 106.4583,
+      "hotel": "Liberty Central Saigon Centre",
+      "hotelAddress": "59 Pasteur, District 1, Ho Chi Minh",
+      "hotelMapsUrl": "https://maps.google.com/?q=Liberty+Central+Saigon+Centre",
+      "historyContext": "La red de túneles de Cu Chi se extiende por más de 250 kilómetros, sirviendo como bastión estratégico subterráneo durante los conflictos del siglo XX.",
+      "steps": [
+        "08:30h: Excursión matutina hacia los túneles subterráneos de Cu Chi.",
+        "Recorrido guiado por las galerías, trampas y centros de mando de la época.",
+        "Regreso a Ho Chi Minh por la tarde.",
+        "Visita exterior al Palacio de la Reunificación y la Catedral de Notre-Dame."
+      ],
+      "cultureTip": "Los vietnamitas muestran una gran resiliencia y hospitalidad, viendo el pasado como una lección superada hacia el futuro.",
+      "practicalTip": "Lleva ropa cómoda y calzado que no te importe ensuciar, ya que entrarás en tramos estrechos de los túneles."
+    },
+    {
+      "day": 4,
+      "dateBadge": "15 MAR",
+      "title": "Excursión al Delta del Mekong",
+      "isSuggestion": false,
+      "meta": "Mekong · Canales · Tradición",
+      "lat": 10.0333,
+      "lng": 105.7833,
+      "hotel": "Liberty Central Saigon Centre",
+      "hotelAddress": "59 Pasteur, District 1, Ho Chi Minh",
+      "hotelMapsUrl": "https://maps.google.com/?q=Liberty+Central+Saigon+Centre",
+      "historyContext": "El río Mekong, conocido como 'el río de los nueve dragones', sustenta la vida agrícola y comercial de millones de personas a lo largo de su inmenso delta.",
+      "steps": [
+        "08:00h: Desplazamiento hacia Ben Tre, en el corazón del Delta del Mekong.",
+        "Paseo en barca tradicional por los canales bordeados de palmeras nipa.",
+        "Degustación de frutos tropicales, té con miel y caramelos de coco artesanales.",
+        "Almuerzo con especialidades locales como el pescado oreja de elefante."
+      ],
+      "cultureTip": "El agua del Mekong es turbia debido a los sedimentos ricos en nutrientes que arrastra desde el Tíbet, esenciales para los cultivos.",
+      "practicalTip": "Lleva protector solar, repelente de mosquitos y un sombrero cónico tradicional (Non La) si deseas protegerte del sol."
+    },
+    {
+      "day": 5,
+      "dateBadge": "16 MAR",
+      "title": "Vuelo y Llegada a la Mágica Hoi An",
+      "isSuggestion": true,
+      "meta": "Hoi An · Casco Antiguo · Farolillos",
+      "lat": 15.8801,
+      "lng": 108.338,
+      "hotel": "Anantara Hoi An Resort",
+      "hotelAddress": "1 Pham Hong Thai, Hoi An",
+      "hotelMapsUrl": "https://maps.google.com/?q=Anantara+Hoi+An+Resort",
+      "historyContext": "Hoi An fue uno de los puertos comerciales más importantes del sudeste asiático entre los siglos XV y XIX, albergando comunidades de mercaderes chinos, japoneses y europeos.",
+      "steps": [
+        "Mañana libre en Ho Chi Minh y traslado al aeropuerto para vuelo doméstico.",
+        "Llegada a Da Nang y traslado en coche hasta Hoi An.",
+        "Check-in en el resort a orillas del río Thu Bon.",
+        "Paseo nocturno por el casco antiguo iluminado por miles de farolillos de colores."
+      ],
+      "cultureTip": "Hoi An es famosa por su artesanía textil; muchos viajeros aprovechan para hacerse ropa a medida en menos de 24 horas.",
+      "practicalTip": "Compra el ticket combinado para acceder a las casas históricas y templos de la ciudad vieja."
+    },
+    {
+      "day": 6,
+      "dateBadge": "17 MAR",
+      "title": "[Sugerencia] Explorando Hoi An y Ruinas de My Son",
+      "isSuggestion": true,
+      "meta": "Hoi An · My Son · UNESCO",
+      "lat": 15.7622,
+      "lng": 108.1256,
+      "hotel": "Anantara Hoi An Resort",
+      "hotelAddress": "1 Pham Hong Thai, Hoi An",
+      "hotelMapsUrl": "https://maps.google.com/?q=Anantara+Hoi+An+Resort",
+      "historyContext": "My Son fue la capital religiosa y política del antiguo Reino de Champa entre los siglos IV y XIV, un complejo de templos hindúes rodeado de frondosa vegetación.",
+      "steps": [
+        "08:30h: Excursión matutina al santuario hindú de My Son (Patrimonio de la Humanidad).",
+        "Regreso a Hoi An al mediodía para almorzar especialidades locales.",
+        "Tarde libre para recorrer el Puente Cubierto Japonés y los mercados locales.",
+        "Cena romántica junto al río Thu Bon."
+      ],
+      "cultureTip": "El reino Champa era de cultura indianizada, lo que se refleja en la arquitectura y las esculturas de arenisca dedicadas a Shiva.",
+      "practicalTip": "Madruga para visitar My Son y evitar las horas de mayor calor y afluencia turística."
+    },
+    {
+      "day": 7,
+      "dateBadge": "18 MAR",
+      "title": "[Sugerencia] Ruta Costera hacia la Imperial Hue",
+      "isSuggestion": true,
+      "meta": "Hue · Ciudadela · Dinastía Nguyen",
+      "lat": 16.4637,
+      "lng": 107.5909,
+      "hotel": "Indine Palace Hotel Hue",
+      "hotelAddress": "105 Le Loi, Hue",
+      "hotelMapsUrl": "https://maps.google.com/?q=Indine+Palace+Hotel+Hue",
+      "historyContext": "Hue fue la capital imperial de Vietnam bajo la dinastía Nguyen desde 1802 hasta 1945, albergando la imponente Ciudadela prohibida y mausoleos reales.",
+      "steps": [
+        "09:00h: Trayecto panorámico cruzando el Paso de Hai Van ('océano de nubes').",
+        "Llegada a Hue y alojamiento en el hotel.",
+        "Visita a la Ciudadela Imperial y la Torre de la Bandera.",
+        "Paseo al atardecer por la ribera del Río del Perfume."
+      ],
+      "cultureTest": "La cocina de Hue destaca por sus platos refinados de la corte imperial, servidos en porciones pequeñas pero muy elaboradas.",
+      "practicalTip": "Lleva calzado cómodo para recorrer la amplia extensión de la Ciudadela y sus palacios."
+    },
+    {
+      "day": 8,
+      "dateBadge": "19 MAR",
+      "title": "Vuelo a Hanoi y Primer Paseo por el Barrio Viejo",
+      "isSuggestion": false,
+      "meta": "Hanoi · Capital · Tradición",
+      "lat": 21.0285,
+      "lng": 105.8542,
+      "hotel": "Sofitel Legend Metropole Hanoi",
+      "hotelAddress": "15 Ngo Quyen, Hoan Kiem, Hanoi",
+      "hotelMapsUrl": "https://maps.google.com/?q=Sofitel+Legend+Metropole+Hanoi",
+      "historyContext": "Hanoi ha sido el centro político de Vietnam durante más de mil años. Su Barrio Viejo conserva la estructura gremial medieval con calles dedicadas a un oficio específico.",
+      "steps": [
+        "Traslado al aeropuerto de Da Nang para tomar el vuelo hacia Hanoi.",
+        "Llegada a Hanoi y traslado al histórico hotel Metropole.",
+        "Paseo en ciclo-fósforo (cyclo) por el Barrio Viejo de las 36 calles.",
+        "Visita al apacible Lago Hoan Kiem y al Templo de la Montaña de Jade."
+      ],
+      "cultureTip": "El Lago Hoan Kiem alberga en sus aguas a la legendaria tortuga sagrada, símbolo de victoria y libertad para el pueblo vietnamita.",
+      "practicalTip": "Prueba el famoso café con huevo (Ca Phe Trung) en una de las cafeterías tradicionales del casco antiguo."
+    },
+    {
+      "day": 9,
+      "dateBadge": "20 MAR",
+      "title": "[Sugerencia] Los Tesoros Culturales de Hanoi",
+      "isSuggestion": true,
+      "meta": "Hanoi · Templo de la Literatura · Mausoleo",
+      "lat": 21.0333,
+      "lng": 105.85,
+      "hotel": "Sofitel Legend Metropole Hanoi",
+      "hotelAddress": "15 Ngo Quyen, Hoan Kiem, Hanoi",
+      "historyContext": "El Templo de la Literatura, fundado en 1070, fue la primera universidad nacional de Vietnam, dedicada a Confucio y a los eruditos del reino.",
+      "steps": [
+        "09:00h: Visita al Mausoleo de Ho Chi Minh y su residencia sobre pilotes.",
+        "Recorrido por la Pagoda del Pilar Único y el Templo de la Literatura.",
+        "Tarde libre para explorar el mercado nocturno o asistir a un espectáculo de marionetas sobre agua.",
+        "Cena de gastronomía local en el Barrio Viejo."
+      ],
+      "cultureTip": "Las marionetas sobre agua son una forma de arte tradicional originaria de los pueblos inundados del Delta del Río Rojo.",
+      "practicalTip": "Para visitar el mausoleo y los templos, viste ropa que cubra hombros y rodillas por respeto a las normas locales."
+    },
+    {
+      "day": 10,
+      "dateBadge": "21 MAR",
+      "title": "Trayecto hacia la Bahía de Ha Long y Crucero",
+      "isSuggestion": false,
+      "meta": "Ha Long · Crucero · Paisaje kárstico",
+      "lat": 20.9101,
+      "lng": 107.1839,
+      "hotel": "Mon Cheri Cruises (Bahía de Ha Long)",
+      "hotelAddress": "Tuan Chau Marina, Ha Long",
+      "hotelMapsUrl": "https://maps.google.com/?q=Tuan_Chau_Marina_Ha_Long",
+      "historyContext": "La leyenda dice que la bahía de Ha Long ('donde el dragón desciende al mar') se formó gracias a los dragones que ayudaron a defender el país arrojando joyas que se convirtieron en islas.",
+      "steps": [
+        "08:00h: Salida en autobús o coche privado desde Hanoi hacia el puerto de Tuan Chau.",
+        "12:00h: Embarque en el crucero de lujo y cóctel de bienvenida.",
+        "Almuerzo a bordo mientras se navega entre miles de formaciones kársticas de piedra caliza.",
+        "Visita a una cueva misteriosa y tiempo para kayak o baño en una cala apartada."
+      ],
+      "cultureTip": "Las formaciones kársticas tienen más de 500 millones de años y han evolucionado bajo el impacto de un clima tropical húmedo.",
+      "practicalTip": "Lleva una chaqueta ligera, ya que en el mar la brisa puede refrescar considerablemente al atardecer."
+    },
+    {
+      "day": 11,
+      "dateBadge": "22 MAR",
+      "title": "Amanecer en la Bahía y Regreso a Hanoi",
+      "isSuggestion": false,
+      "meta": "Ha Long · Tai Chi · Regreso a Hanoi",
+      "lat": 21.0285,
+      "lng": 105.8542,
+      "hotel": "Sofitel Legend Metropole Hanoi",
+      "hotelAddress": "15 Ngo Quyen, Hoan Kiem, Hanoi",
+      "hotelMapsUrl": "https://maps.google.com/?q=Sofitel+Legend+Metropole+Hanoi",
+      "historyContext": "Las mañanas en la bahía de Ha Long ofrecen un espectáculo místico con la niebla matutina envolviendo las siluetas de las islas de piedra.",
+      "steps": [
+        "06:30h: Sesión opcional de Tai Chi en la cubierta superior al amanecer.",
+        "Desayuno buffet a bordo mientras el barco emprende el camino de regreso al puerto.",
+        "11:00h: Desembarque y traslado por carretera de regreso a Hanoi.",
+        "Tarde libre para compras de última hora o relax en el hotel."
+      ],
+      "cultureTip": "El Tai Chi matutino ayuda a armonizar cuerpo y mente conectando con la energía pacífica del entorno natural.",
+      "practicalTip": "Asegúrate de llevar contigo todas tus pertenencias al hacer el check-out del barco."
+    },
+    {
+      "day": 12,
+      "dateBadge": "23 MAR",
+      "title": "[Sugerencia] Último Día en Hanoi y Vuelo de Regreso",
+      "isSuggestion": true,
+      "meta": "Hanoi · Despedida · Vuelo internacional",
+      "lat": 21.2212,
+      "lng": 105.8072,
+      "hotel": "Vuelo a bordo",
+      "hotelAddress": "En tránsito",
+      "hotelMapsUrl": "https://maps.google.com/?q=Noi+Bai+International+Airport",
+      "historyContext": "Hanoi despide al viajero con su bullicioso encanto callejero, sus avenidas arboladas de estilo francés y el aroma inconfundible del café vietnamita.",
+      "steps": [
+        "Mañana libre para pasear por el Barrio Francés o visitar el Museo Etnográfico de Vietnam.",
+        "Almuerzo de despedida probando el plato nacional por excelencia: el Pho Bo (sopa de ternera).",
+        "Traslado al Aeropuerto Internacional de Noi Bai (HAN).",
+        "Facturación y embarque en el vuelo de regreso a España."
+      ],
+      "cultureTip": "El 'Pho' se consume a cualquier hora del día en Vietnam, siendo el desayuno favorito de millones de locales.",
+      "practicalTip": "Gestiona la devolución de impuestos (Tax Refund) en el aeropuerto si has realizado compras elevadas."
+    },
+    {
+      "day": 13,
+      "dateBadge": "24 MAR",
+      "title": "Llegada a España y Fin del Viaje",
+      "isSuggestion": false,
+      "meta": "Madrid · Llegada · Fin",
+      "lat": 40.4168,
+      "lng": -3.7038,
+      "hotel": "Casa",
+      "hotelAddress": "España",
+      "hotelMapsUrl": "https://maps.google.com/?q=Madrid",
+      "historyContext": "Fin de una travesía inolvidable por los paisajes, la historia y la cálida cultura de Vietnam.",
+      "steps": [
+        "Aterrizaje en el aeropuerto de Madrid-Barajas.",
+        "Recogida de equipaje y reencuentro con familiares."
+      ],
+      "cultureTip": "Guarda los recuerdos y fotografías de este viaje como testimonio de una de las culturas más fascinantes de Asia.",
+      "practicalTip": "Revisa que no dejes ningún documento importante olvidado en el equipaje de mano."
+    }
+  ],
+  "curiosities": [
+    {
+      "title": "El sombrero cónico (Non La)",
+      "icon": "fa-hat-cowboy",
+      "desc": "Más allá de su uso estético, sirve como protección contra el sol intenso y las lluvias monzónicas, e incluso como cesta improvisada."
+    },
+    {
+      "title": "El café con huevo (Ca Phe Trung)",
+      "icon": "fa-mug-hot",
+      "desc": "Inventado en Hanoi durante la escasez de leche fresca en los años 40, combina yema de huevo batida con leche condensada y café robusta."
+    },
+    {
+      "title": "La cultura del café en la calle",
+      "icon": "fa-coffee",
+      "desc": "Los vietnamitas se sientan en diminutos taburetes de plástico en las aceras para charlar y disfrutar de un café lento filtrado por goteo."
+    },
+    {
+      "title": "Culto a los antepasados",
+      "icon": "fa-fire",
+      "desc": "Casi cada hogar y negocio tiene un altar dedicado a sus ancestros donde se realizan ofrendas de comida, incienso y dinero simbólico."
+    },
+    {
+      "title": "El agua en los arrozales",
+      "icon": "fa-water",
+      "desc": "El cultivo de arroz requiere una meticulosa gestión comunitaria del agua, moldeando la estructura social y las tradiciones rurales del país."
+    }
+  ],
+  "etiquette": [
+    {
+      "title": "Descalzarse al entrar",
+      "icon": "fa-shoe-prints",
+      "desc": "Es obligatorio quitarse los zapatos al entrar en casas particulares y ciertos templos sagrados."
+    },
+    {
+      "title": "Trato con personas mayores",
+      "icon": "fa-hands-praying",
+      "desc": "Muestra siempre respeto a los ancianos; al entregar o recibir algo (como dinero o tarjetas), hazlo con ambas manos."
+    },
+    {
+      "title": "Vestimenta en templos",
+      "icon": "fa-shirt",
+      "desc": "Hombros y rodillas deben estar cubiertos al visitar pagodas, templos y lugares de culto o memoriales oficiales."
+    },
+    {
+      "title": "Demostraciones públicas de afecto",
+      "icon": "fa-heart-crack",
+      "desc": "Las muestras excesivas de afecto en público están mal vistas por la sociedad tradicional vietnamita."
+    }
+  ],
+  "transports": [
+    {
+      "date": "16 MAR · 14:00",
+      "title": "Vuelo Doméstico SGN → DAD",
+      "desc": "Desplazamiento rápido hacia la región central de Hoi An."
+    },
+    {
+      "date": "19 MAR · 10:15",
+      "title": "Vuelo Doméstico DAD → HAN",
+      "desc": "Conexión hacia la capital del país, Hanoi."
+    }
+  ],
+  "gourmet": [
+    {
+      "dish": "Pho Bo",
+      "desc": "Sopa tradicional de fideos de arroz con caldo aromático de ternera, hierbas frescas y brotes de soja.",
+      "city": "Hanoi",
+      "recommendedSpot": "Pho Gia Truyen Bat Dan"
+    },
+    {
+      "dish": "Banh Mi",
+      "desc": "Baguette crujiente rellena de paté, embutidos locales, encurtidos, cilantro y salsa picante.",
+      "city": "Ho Chi Minh",
+      "recommendedSpot": "Banh Mi Huynh Hoa"
+    },
+    {
+      "dish": "Cao Lau",
+      "desc": "Fideos de arroz exclusivos de la región con fideos elásticos, cerdo char siu, hierbas y crujiente de masa.",
+      "city": "Hoi An",
+      "recommendedSpot": "Cao Lau Thanh"
+    },
+    {
+      "dish": "Bun Cha",
+      "desc": "Cerdo a la parrilla servido sobre un cuenco de fideos de arroz fríos con caldo dulce y abundante verdura.",
+      "city": "Hanoi",
+      "recommendedSpot": "Bun Cha Huong Lien"
+    },
+    {
+      "dish": "Goi Cuon",
+      "desc": "Rollitos frescos de primavera envueltos en papel de arroz con gambas, cerdo, hierbas y fideos.",
+      "city": "Ho Chi Minh",
+      "recommendedSpot": "Quan Ngon 138"
+    },
+    {
+      "dish": "Banh Xeo",
+      "desc": "Crepe crujiente de arroz y cúrcuma rellena de brotes de soja, gambas y carne de cerdo.",
+      "city": "Hoi An",
+      "recommendedSpot": "Banh Xeo Ba Le Well"
+    },
+    {
+      "dish": "Com Tam",
+      "desc": "Plato de arroz roto servido con costilla de cerdo a la parrilla, huevo frito y encurtidos.",
+      "city": "Ho Chi Minh",
+      "recommendedSpot": "Com Tam Ba Ghien"
+    },
+    {
+      "dish": "Bun Bo Hue",
+      "desc": "Sopa picante de fideos de arroz con un marcado toque de hierba limón y carne de ternera.",
+      "city": "Hue",
+      "recommendedSpot": "Bun Bo Hue Madame Thu"
+    },
+    {
+      "dish": "Cha Ca",
+      "desc": "Pescado marinado en cúrcuma y eneldo salteado en la mesa y servido con fideos de arroz y cacahuetes.",
+      "city": "Hanoi",
+      "recommendedSpot": "Cha Ca Thang Long"
+    },
+    {
+      "dish": "Egg Coffee",
+      "desc": "Café vietnamita coronado con una crema densa y dulce elaborada con yema de huevo batida.",
+      "city": "Hanoi",
+      "recommendedSpot": "Café Giang"
+    }
+  ],
+  "flashcards": [
+    {
+      "category": "Restaurante",
+      "local": "Tính tiền giùm tôi",
+      "phonetic": "Tin tien yum toy",
+      "spanish": "La cuenta, por favor"
+    },
+    {
+      "category": "Carta",
+      "local": "Cho tôi xem thực đơn tiếng Anh",
+      "phonetic": "Cho toy sem thực don tieng Anh",
+      "spanish": "¿Tienen menú en inglés?"
+    },
+    {
+      "category": "Compras",
+      "local": "Không cần túi nilon",
+      "phonetic": "Khong kan tuy nilon",
+      "spanish": "Sin bolsa de plástico, gracias"
+    },
+    {
+      "category": "Urgencias",
+      "local": "Nhà vệ sinh ở đâu?",
+      "phonetic": "Nha ve sin o dau?",
+      "spanish": "¿Dónde está el baño?"
+    },
+    {
+      "category": "Taxi",
+      "local": "Đưa tôi đến ga",
+      "phonetic": "Dua toy den ga",
+      "spanish": "A la estación, por favor"
+    },
+    {
+      "category": "Alergias",
+      "local": "Món này có thịt heo không?",
+      "phonetic": "Mon nay ko thit heo khong?",
+      "spanish": "¿Lleva carne de cerdo?"
+    },
+    {
+      "category": "Cortesía",
+      "local": "Xin chào",
+      "phonetic": "Sin chao",
+      "spanish": "Hola"
+    },
+    {
+      "category": "Cortesía",
+      "local": "Cảm ơn",
+      "phonetic": "Cam on",
+      "spanish": "Gracias"
+    },
+    {
+      "category": "Compras",
+      "local": "Bao nhiêu tiền?",
+      "phonetic": "Bao nhieu tien?",
+      "spanish": "¿Cuánto cuesta?"
+    },
+    {
+      "category": "Urgencias",
+      "local": "Cứu tôi với",
+      "phonetic": "Cyu toy voy",
+      "spanish": "¡Ayuda, por favor!"
+    }
+  ],
+  "quiz": [
+    {
+      "question": "¿Cómo se llamaba anteriormente la actual ciudad de Ho Chi Minh?",
+      "options": [
+        "Saigón",
+        "Hanoi",
+        "Hue"
+      ],
+      "correct": 0,
+      "explanation": "La ciudad mantuvo el nombre de Saigón hasta la reunificación del país en 1975."
+    },
+    {
+      "question": "¿Qué dinastía imperial gobernó desde la ciudad histórica de Hue?",
+      "options": [
+        "Dinastía Nguyen",
+        "Dinastía Tran",
+        "Dinastía Le"
+      ],
+      "correct": 0,
+      "explanation": "La dinastía Nguyen fue la última familia imperial de Vietnam, gobernando desde Hue entre 1802 y 1945."
+    },
+    {
+      "question": "¿Qué elemento es la base principal de la famosa sopa Pho?",
+      "options": [
+        "Fideos de arroz",
+        "Fideos de trigo",
+        "Pasta de judía"
+      ],
+      "correct": 0,
+      "explanation": "El Pho se elabora indispensablemente con fideos planos de arroz sumergidos en un caldo cocinado durante horas."
+    },
+    {
+      "question": "¿Qué simbolizan los farolillos de colores en la ciudad de Hoi An?",
+      "options": [
+        "Buena suerte, felicidad y prosperidad",
+        "Victoria en batallas antiguas",
+        "Llegada de la estación lluviosa"
+      ],
+      "correct": 0,
+      "explanation": "Colgar farolillos en las puertas y calles se considera un talismán para atraer la fortuna y la paz al hogar."
+    }
+  ],
+  "packing": [
+    {
+      "cat": "Documentación & Pagos",
+      "item": "Pasaporte en vigor (> 6 meses), visado impreso y tarjetas sin comisiones"
+    },
+    {
+      "cat": "Electrónica & Logística",
+      "item": "Adaptador universal de enchufe y batería externa (powerbank)"
+    },
+    {
+      "cat": "Ropa & Calzado",
+      "item": "Ropa ligera de lino/algodón, chubasquero ligero y calzado cómodo para caminar"
+    }
+  ],
+  "emergency": {
+    "police": "113",
+    "ambulance": "115",
+    "embassy": "Embajada de España en Hanoi: (+84) 24 3771 5207",
+    "hospital": "Family Medical Practice (Ho Chi Minh / Hanoi) - Atención internacional 24h"
+  }
+};
+
+    const app = {
+      map: null,
+      allExpanded: false,
+      quizScore: 0,
+      quizAnswered: {},
+
+      init() {
+        const d = window.__TRIP_DATA__;
+        if (!d) return;
+
+        const hTitle = document.getElementById('hTitle');
+        if (hTitle) {
+          hTitle.innerHTML = `
+            <img src="/logo-header.svg" alt="ChesTrips">
+            <span>${d.tripTitle || 'ChesTrips'}</span>
+          `;
+        }
+        
+        const hDates = document.getElementById('hDates');
+        if (hDates) hDates.textContent = d.dates || '';
+
+        this.renderStats(d.stats);
+        this.renderFlights(d.flights);
+        this.renderQuickFacts(d.quickFacts);
+        this.renderThread(d.routeThread);
+        this.renderWeather(d.weatherTable);
+        this.renderTransports(d.transports);
+        this.renderItinerary(d.days);
+        this.initCurrency(d.currency);
+        this.renderGourmet(d.gourmet);
+        this.renderCuriosities(d.curiosities);
+        this.renderEtiquette(d.etiquette);
+        this.renderFlashcards(d.flashcards);
+        this.renderQuiz(d.quiz);
+        this.renderPacking(d.packing);
+        this.renderSOS(d.emergency);
+
+        const notesEl = document.getElementById('localNotes');
+        if (notesEl) {
+          const savedNotes = localStorage.getItem('ches_notes_' + (d.tripTitle || 'v'));
+          if (savedNotes) notesEl.value = savedNotes;
+        }
+
+        this.loadChecklistStates();
+      },
+
+      tab(tabId, btn) {
+        document.querySelectorAll('.tab-view').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.dock-tab-btn').forEach(b => b.classList.remove('active'));
+        const target = document.getElementById('tab-' + tabId);
+        if (target) target.classList.add('active');
+        if (btn) {
+          btn.classList.add('active');
+          btn.scrollIntoView({ behavior: 'smooth', inline: 'center' });
+        }
+        if (tabId === 'mapa') {
+          setTimeout(() => this.initMap(), 200);
+        }
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      },
+
+      renderStats(s) {
+        const c = document.getElementById('statGrid');
+        if (!c || !s) return;
+        c.innerHTML = `
+          <div class="stat-card"><div class="stat-num">${s.days || '--'}</div><div class="stat-lbl">Días</div></div>
+          <div class="stat-card"><div class="stat-num">${s.cities || '--'}</div><div class="stat-lbl">Zonas</div></div>
+          <div class="stat-card"><div class="stat-num">${s.hotels || '--'}</div><div class="stat-lbl">Hoteles</div></div>
+          <div class="stat-card"><div class="stat-num">${s.flights || '--'}</div><div class="stat-lbl">Vuelos</div></div>
+        `;
+      },
+
+      renderFlights(fl) {
+        const c = document.getElementById('flightsContainer');
+        if (!c) return;
+        if (!fl || !fl.length) { c.style.display = 'none'; return; }
+        c.style.display = 'block';
+        c.innerHTML = `
+          <div class="flight-card">
+            <h4 style="font-size:0.9rem; font-weight:800; margin-bottom:10px; color:var(--primary);">
+              <i class="fa-solid fa-plane"></i> Vuelos Reservados ${fl[0]?.locator ? '<span style="font-family:var(--font-mono); font-size:0.8rem; font-weight:700; color:var(--muted); margin-left:6px;">(Ref: ' + fl[0].locator + ')</span>' : ''}
+            </h4>
+            ${fl.map(f => `
+              <div class="flight-segment">
+                <div>
+                  <span class="flight-code">${f.code || 'Vuelo'}</span>
+                  <span class="flight-route">${f.route || ''}</span>
+                </div>
+                <div class="flight-time">${f.time || ''}</div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      },
+
+      renderQuickFacts(qf) {
+        const c = document.getElementById('quickFactsGrid');
+        if (!c) return;
+        if (!qf || !qf.length) { c.style.display = 'none'; return; }
+        c.style.display = 'grid';
+        c.innerHTML = qf.map(f => `
+          <div class="fact-card">
+            <i class="fa-solid ${f.icon || 'fa-circle-info'}"></i>
+            <h5>${f.title}</h5>
+            <p>${f.desc}</p>
+          </div>
+        `).join('');
+      },
+
+      renderThread(th) {
+        const c = document.getElementById('routeThread');
+        if (!c || !th) return;
+        c.innerHTML = th.map(node => `
+          <div class="thread-stop" onclick="app.filterByThread('${node.query || node.name}')">
+            <i class="fa-solid ${node.icon || 'fa-location-dot'}"></i>
+            <span>${node.name}</span>
+          </div>
+        `).join('');
+      },
+
+      filterByThread(q) {
+        this.tab('itinerario');
+        const s = document.getElementById('globalSearch');
+        if (s) { s.value = q; this.search(q); }
+      },
+
+      renderWeather(w) {
+        const c = document.getElementById('weatherList');
+        if (!c) return;
+        if (!w || !w.length) { c.innerHTML = '<p>Clima estacional favorable.</p>'; return; }
+        c.innerHTML = w.map(row => `
+          <p style="margin-bottom:6px;"><strong>${row.region}:</strong> ${row.temp} · ${row.desc}</p>
+        `).join('');
+      },
+
+      renderTransports(tr) {
+        const c = document.getElementById('transportsList');
+        if (!c) return;
+        if (!tr || !tr.length) { c.innerHTML = '<p style="font-size:0.86rem; color:var(--muted);">Sin traslados complejos registrados.</p>'; return; }
+        c.innerHTML = tr.map(t => `
+          <div style="padding:8px 0; border-bottom:1px solid var(--border-subtle); font-size:0.86rem;">
+            <div style="font-weight:700; color:var(--primary);"><i class="fa-solid fa-route"></i> ${t.date}: ${t.title}</div>
+            <div style="color:var(--muted); font-size:0.8rem;">${t.desc}</div>
+          </div>
+        `).join('');
+      },
+
+      initMap() {
+        const d = window.__TRIP_DATA__;
+        const container = document.getElementById('mapContainer');
+        if (!d || !container) return;
+        if (this.map) {
+          this.map.invalidateSize();
+          return;
+        }
+
+        this.map = L.map('mapContainer').setView(d.mapCenter || [16.0, 107.0], d.mapZoom || 6);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+          maxZoom: 18,
+          attribution: '&copy; CARTO'
+        }).addTo(this.map);
+
+        const latLngs = [];
+        (d.days || []).forEach(day => {
+          if (day.lat && day.lng) {
+            latLngs.push([day.lat, day.lng]);
+            L.circleMarker([day.lat, day.lng], {
+              radius: 6,
+              fillColor: '#bd3126',
+              color: '#ffffff',
+              weight: 2,
+              fillOpacity: 1
+            }).addTo(this.map).bindPopup(`<b>Día ${day.day}: ${day.title}</b><br>${day.meta || ''}`);
+          }
+        });
+
+        if (latLngs.length > 1) {
+          L.polyline(latLngs, { color: '#2f5a38', weight: 3, dashArray: '6, 8' }).addTo(this.map);
+        }
+      },
+
+      renderItinerary(days) {
+        const c = document.getElementById('itineraryContainer');
+        if (!c) return;
+        c.innerHTML = (days || []).map((day, idx) => `
+          <div class="day-card searchable-card ${idx === 0 ? 'open' : ''}" data-search="${day.title} ${day.meta || ''} ${day.hotel || ''}">
+            <div class="day-header" onclick="this.parentElement.classList.toggle('open')">
+              <div style="display:flex; align-items:center; min-width:0;">
+                <span class="day-badge">${day.dateBadge || 'DÍA ' + day.day}</span>
+                <div class="day-title-wrap">
+                  <div class="day-title">
+                    Día ${day.day}: ${day.title}
+                    ${day.isSuggestion ? '<span class="suggestion-chip"><i class="fa-solid fa-sparkles"></i> Sugerencia</span>' : ''}
+                  </div>
+                  <div class="day-meta">${day.meta || ''}</div>
+                </div>
+              </div>
+              <i class="fa-solid fa-chevron-down day-chevron"></i>
+            </div>
+            <div class="day-body">
+              ${day.historyContext ? `<div class="history-box"><i class="fa-solid fa-landmark"></i> ${day.historyContext}</div>` : ''}
+              ${day.hotel ? `
+                <div class="hotel-subcard">
+                  <div style="font-weight:700; color:var(--secondary);"><i class="fa-solid fa-hotel"></i> ${day.hotel}</div>
+                  ${day.hotelAddress ? `<div style="font-size:0.8rem; color:var(--muted);">${day.hotelAddress}</div>` : ''}
+                  ${day.hotelMapsUrl ? `<a href="${day.hotelMapsUrl}" target="_blank" class="action-btn"><i class="fa-solid fa-map-location-dot"></i> Google Maps</a>` : ''}
+                </div>` : ''}
+              <ul class="clean-steps">
+                ${(day.steps || []).map(s => `<li>${s}</li>`).join('')}
+              </ul>
+              ${day.cultureTip ? `<div class="tip-card" style="border-left-color:var(--secondary);"><i class="fa-solid fa-eye"></i> <strong>Cultura:</strong> ${day.cultureTip}</div>` : ''}
+              ${day.practicalTip ? `<div class="tip-card"><i class="fa-solid fa-lightbulb"></i> <strong>Consejo:</strong> ${day.practicalTip}</div>` : ''}
+            </div>
+          </div>
+        `).join('');
+      },
+
+      toggleAllDays() {
+        this.allExpanded = !this.allExpanded;
+        document.querySelectorAll('.day-card').forEach(c => c.classList.toggle('open', this.allExpanded));
+      },
+
+      initCurrency(curr) {
+        if (!curr) return;
+        const rate = curr.rateToEUR || 1;
+        const lbl = document.getElementById('fxLabelLocal');
+        if (lbl) lbl.textContent = curr.code || 'LOCAL';
+        const locIn = document.getElementById('fxLocal');
+        const eurIn = document.getElementById('fxEur');
+
+        this.calcFxLocal = () => {
+          if (!locIn || !eurIn) return;
+          const val = parseFloat(locIn.value) || 0;
+          eurIn.value = (val / rate).toFixed(2);
+        };
+        this.calcFxEur = () => {
+          if (!locIn || !eurIn) return;
+          const val = parseFloat(eurIn.value) || 0;
+          locIn.value = Math.round(val * rate);
+        };
+
+        if (locIn) {
+          locIn.value = curr.quickChips?.[1] || 100000;
+          this.calcFxLocal();
+        }
+
+        const chipsContainer = document.getElementById('fxChips');
+        if (chipsContainer) {
+          chipsContainer.innerHTML = (curr.quickChips || []).map(chip => `
+            <span class="fx-chip" onclick="document.getElementById('fxLocal').value=${chip}; app.calcFxLocal();">${chip.toLocaleString()} ${curr.code}</span>
+          `).join('');
+        }
+      },
+
+      renderGourmet(gList) {
+        const c = document.getElementById('gourmetList');
+        if (!c || !gList) return;
+        c.innerHTML = gList.map((g, idx) => `
+          <div class="check-line" onclick="app.toggleCheck('gourmet', ${idx}, this, event)">
+            <input type="checkbox" id="chk-g-${idx}" onclick="event.stopPropagation(); app.toggleCheck('gourmet', ${idx}, this.parentElement, event)">
+            <label for="chk-g-${idx}" style="cursor:pointer; flex:1;">
+              <strong>${g.dish}</strong> ${g.city ? '(' + g.city + ')' : ''}: ${g.desc}
+              ${g.recommendedSpot ? '<span style="color:var(--primary); font-weight:700; display:block; font-size:0.78rem; margin-top:2px;"><i class="fa-solid fa-location-dot"></i> Recomendado: ' + g.recommendedSpot + '</span>' : ''}
+            </label>
+          </div>
+        `).join('');
+        this.calcProgress('gourmet');
+      },
+
+      renderCuriosities(cur) {
+        const c = document.getElementById('curiositiesList');
+        if (!c) return;
+        if (!cur || !cur.length) { c.style.display = 'none'; return; }
+        c.style.display = 'block';
+        c.innerHTML = cur.map(row => `
+          <div class="curiosity-card">
+            <h5><i class="fa-solid ${row.icon || 'fa-landmark'}"></i> ${row.title}</h5>
+            <p>${row.desc}</p>
+          </div>
+        `).join('');
+      },
+
+      renderEtiquette(etList) {
+        const c = document.getElementById('etiquetteList');
+        if (!c || !etList) return;
+        c.innerHTML = etList.map(e => `
+          <div class="check-box-group" style="margin-bottom:12px;">
+            <h3><i class="fa-solid ${e.icon || 'fa-handshake'}"></i> ${e.title}</h3>
+            <p style="font-size:0.86rem; color:var(--muted); line-height:1.45;">${e.desc}</p>
+          </div>
+        `).join('');
+      },
+
+      renderFlashcards(cards) {
+        const c = document.getElementById('fcGrid');
+        if (!c || !cards) return;
+        c.innerHTML = cards.map(fc => `
+          <div class="flashcard" onclick="app.openModal('${fc.category || ''}', '${fc.local}', '${fc.phonetic || ''}', '${fc.spanish}')">
+            <div style="font-size:0.75rem; font-weight:800; color:var(--muted);">${fc.category || 'Frase'}</div>
+            <div style="font-size:1.05rem; font-weight:800; color:var(--secondary); margin:4px 0;">${fc.local}</div>
+            <div style="font-family:var(--font-mono); font-size:0.75rem; color:var(--accent);">${fc.phonetic || ''}</div>
+            <div style="font-size:0.82rem; margin-top:2px;">${fc.spanish}</div>
+          </div>
+        `).join('');
+      },
+
+      openModal(cat, loc, pho, spa) {
+        document.getElementById('gModalCat').textContent = cat || 'COMUNICACIÓN';
+        document.getElementById('gModalLocal').textContent = loc;
+        document.getElementById('gModalPhonetic').textContent = pho;
+        document.getElementById('gModalSpanish').textContent = spa;
+        document.getElementById('giantModal').classList.add('active');
+      },
+      closeModal() {
+        document.getElementById('giantModal').classList.remove('active');
+      },
+
+      renderQuiz(quiz) {
+        const c = document.getElementById('quizContainer');
+        if (!c || !quiz || !quiz.length) return;
+        const scoreEl = document.getElementById('quizScoreText');
+        if (scoreEl) scoreEl.textContent = '0 / ' + quiz.length;
+        c.innerHTML = quiz.map((q, idx) => `
+          <div class="quiz-card" id="qcard-${idx}">
+            <div class="quiz-q">${idx + 1}. ${q.question}</div>
+            <div class="quiz-opts">
+              ${q.options.map((opt, oIdx) => `
+                <button class="quiz-btn" onclick="app.answerQuiz(${idx}, ${oIdx}, ${q.correct})">${opt}</button>
+              `).join('')}
+            </div>
+            <div class="quiz-exp" id="qexp-${idx}">${q.explanation}</div>
+          </div>
+        `).join('');
+      },
+
+      answerQuiz(qIdx, oIdx, correct) {
+        if (this.quizAnswered[qIdx]) return;
+        this.quizAnswered[qIdx] = true;
+
+        const card = document.getElementById('qcard-' + qIdx);
+        if (!card) return;
+        const btns = card.querySelectorAll('.quiz-btn');
+        const exp = document.getElementById('qexp-' + qIdx);
+
+        if (oIdx === correct) {
+          btns[oIdx].classList.add('correct');
+          this.quizScore++;
+        } else {
+          btns[oIdx].classList.add('wrong');
+          if (btns[correct]) btns[correct].classList.add('correct');
+        }
+        if (exp) exp.style.display = 'block';
+        const total = (window.__TRIP_DATA__.quiz || []).length;
+        const scoreEl = document.getElementById('quizScoreText');
+        if (scoreEl) scoreEl.textContent = this.quizScore + ' / ' + total;
+      },
+
+      renderPacking(pack) {
+        const c = document.getElementById('packingList');
+        if (!c || !pack) return;
+        c.innerHTML = pack.map((p, idx) => {
+          const itemText = typeof p === 'string' ? p : ('[' + p.cat + '] ' + p.item);
+          return `
+            <div class="check-line" onclick="app.toggleCheck('packing', ${idx}, this, event)">
+              <input type="checkbox" id="chk-p-${idx}" onclick="event.stopPropagation(); app.toggleCheck('packing', ${idx}, this.parentElement, event)">
+              <label for="chk-p-${idx}" style="cursor:pointer; flex:1;">${itemText}</label>
+            </div>
+          `;
+        }).join('');
+        this.calcProgress('packing');
+      },
+
+      renderSOS(em) {
+        const embassyEl = document.getElementById('sosEmbassy');
+        if (embassyEl && em) embassyEl.textContent = em.embassy || 'Consultar con el consulado general de tu país.';
+        const phonesEl = document.getElementById('sosPhones');
+        if (phonesEl && em) {
+          phonesEl.innerHTML = `
+            <p>• <strong>Policía:</strong> ${em.police || '112'} | • <strong>Ambulancia:</strong> ${em.ambulance || '112'}</p>
+            ${em.hospital ? `<p style="margin-top:6px;">• <strong>Hospital:</strong> ${em.hospital}</p>` : ''}
+          `;
+        }
+      },
+
+      toggleCheck(group, idx, lineEl, evt) {
+        const chk = lineEl.querySelector('input[type="checkbox"]');
+        if (chk && evt && evt.target !== chk) chk.checked = !chk.checked;
+        if (chk) lineEl.classList.toggle('checked-done', chk.checked);
+
+        const tripKey = window.__TRIP_DATA__?.tripTitle || 'default';
+        const stateKey = 'ches_' + group + '_' + tripKey;
+        const saved = JSON.parse(localStorage.getItem(stateKey) || '{}');
+        if (chk) saved[idx] = chk.checked;
+        localStorage.setItem(stateKey, JSON.stringify(saved));
+
+        this.calcProgress(group);
+      },
+
+      calcProgress(group) {
+        const container = document.getElementById(group === 'gourmet' ? 'gourmetList' : 'packingList');
+        if (!container) return;
+        const total = container.querySelectorAll('input[type="checkbox"]').length;
+        const done = container.querySelectorAll('input[type="checkbox"]:checked').length;
+        const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+
+        const lbl = document.getElementById(group === 'gourmet' ? 'gourmetLabel' : 'luggageLabel');
+        const bar = document.getElementById(group === 'gourmet' ? 'gourmetBar' : 'luggageBar');
+        if (lbl) lbl.textContent = done + ' / ' + total + ' (' + pct + '%)';
+        if (bar) bar.style.width = pct + '%';
+      },
+
+      loadChecklistStates() {
+        const tripKey = window.__TRIP_DATA__?.tripTitle || 'default';
+        ['gourmet', 'packing'].forEach(group => {
+          const stateKey = 'ches_' + group + '_' + tripKey;
+          const saved = JSON.parse(localStorage.getItem(stateKey) || '{}');
+          const prefix = group === 'gourmet' ? 'chk-g-' : 'chk-p-';
+          Object.keys(saved).forEach(idx => {
+            const chk = document.getElementById(prefix + idx);
+            if (chk && saved[idx]) {
+              chk.checked = true;
+              const parentLine = chk.closest('.check-line');
+              if (parentLine) parentLine.classList.add('checked-done');
+            }
+          });
+          this.calcProgress(group);
+        });
+      },
+
+      saveNotes() {
+        const d = window.__TRIP_DATA__;
+        const notesEl = document.getElementById('localNotes');
+        if (notesEl && d) {
+          localStorage.setItem('ches_notes_' + (d.tripTitle || 'v'), notesEl.value);
+        }
+      },
+
+      search(query) {
+        const q = (query || '').toLowerCase().trim();
+        document.querySelectorAll('.searchable-card').forEach(el => {
+          const text = (el.innerText + ' ' + (el.getAttribute('data-search') || '')).toLowerCase();
+          if (text.includes(q)) {
+            el.style.display = '';
+            if (q.length > 2) el.classList.add('open');
+          } else {
+            el.style.display = 'none';
+          }
+        });
+      }
+    };
+
+    window.addEventListener('DOMContentLoaded', () => app.init());
+  </script>
+</body>
+</html>
