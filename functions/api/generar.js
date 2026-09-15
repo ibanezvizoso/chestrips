@@ -820,12 +820,43 @@ const masterTemplateHtml = `<!DOCTYPE html>
       },
 
       initCountdown(startIso) {
-        const chip = document.getElementById('hCountdown');
-        if (!chip) return;
-        if (!startIso) { chip.textContent = 'En ruta'; return; }
-        const diff = Math.ceil((new Date(startIso) - new Date()) / 86400000);
-        chip.textContent = diff > 0 ? ('Faltan ' + diff + ' días') : '¡En curso!';
-      },
+  const chip = document.getElementById('hCountdown');
+  if (!chip) return;
+
+  if (!startIso) {
+    chip.textContent = 'En ruta';
+    return;
+  }
+
+  // Parsear forzando formato YYYY-MM-DD local para evitar desajustes UTC
+  const parts = String(startIso).split('-');
+  let targetDate;
+  if (parts.length === 3) {
+    targetDate = new Date(parts[0], parts[1] - 1, parts[2]);
+  } else {
+    targetDate = new Date(startIso);
+  }
+
+  // Si la fecha devuelta por el modelo no es válida (NaN)
+  if (isNaN(targetDate.getTime())) {
+    chip.textContent = 'En ruta';
+    return;
+  }
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  targetDate.setHours(0, 0, 0, 0);
+
+  const diffDays = Math.round((targetDate - today) / 86400000);
+
+  if (diffDays > 0) {
+    chip.textContent = `Faltan ${diffDays} días`;
+  } else if (diffDays === 0) {
+    chip.textContent = '¡Comienza hoy!';
+  } else {
+    chip.textContent = '¡En curso!';
+  }
+},
 
       renderStats(s) {
         const c = document.getElementById('statGrid');
