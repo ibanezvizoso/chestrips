@@ -349,35 +349,65 @@
 
     <main class="glass-card">
       <form id="tripForm" onsubmit="handleFormSubmit(event)">
+        
+        <!-- Campo 1: Nombre / Slug único -->
         <div class="form-group">
-          <label for="destinoInput"><i class="fa-solid fa-location-dot" style="color: var(--accent); margin-right: 0.35rem;"></i> Nombre o Destino del Viaje</label>
-          <input type="text" id="destinoInput" placeholder="Ej: Japón Pareja, Roma en Grupo, Vietnam Express" required>
+          <label for="destinoInput">
+            <i class="fa-solid fa-tag" style="color: var(--accent); margin-right: 0.35rem;"></i> 
+            Nombre único del viaje
+          </label>
+          <input 
+            type="text" 
+            id="destinoInput" 
+            placeholder="ej: grecia-antonio-y-laura, vietnam-amigos-octubre, roma-express-26" 
+            required
+            autocomplete="off"
+            spellcheck="false"
+          >
+          <p style="font-size: 0.78rem; color: var(--text-muted); margin-top: 0.35rem;">
+            💡 <strong>Elige un nombre exclusivo:</strong> Este texto formará la dirección privada de tu web/app (evita nombres genéricos como <em>viaje</em> o <em>japon</em> para no solapar el viaje de otros).
+          </p>
         </div>
 
-        <div class="form-group">
-          <label for="notasInput"><i class="fa-solid fa-align-left" style="color: var(--accent); margin-right: 0.35rem;"></i> Notas, Reservas o Itinerario</label>
-          <textarea id="notasInput" placeholder="Día 1: Llegada a Tokio y cena en Shinjuku&#10;Día 2: Templo Senso-ji y barrio Akihabara&#10;Hotel: Shinjuku Granbell&#10;Equipaje: Adaptador universal y calzado cómodo..." required></textarea>
+        <!-- Campo 2: Pegado de documentos / notas -->
+        <div class="form-group" style="margin-top: 1.5rem;">
+          <label for="notasInput">
+            <i class="fa-solid fa-file-lines" style="color: var(--accent); margin-right: 0.35rem;"></i> 
+            Notas, itinerario o preparativos en bruto
+          </label>
+          
+          <div style="background: rgba(56, 189, 248, 0.05); border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; padding: 0.75rem 1rem; margin-bottom: 0.75rem; font-size: 0.82rem; color: #cbd5e1; line-height: 1.5;">
+            <strong>¿Tienes un Word, PDF, email de agencia o mensajes de WhatsApp?</strong><br>
+            Borra si quieres tus apellidos o datos bancarios por privacidad, copia todo el bloque de texto tal cual lo tengas y pégalo abajo. ChesTrips extraerá las paradas, vuelos, hoteles, consejos locales y generará las herramientas interactivas.
+          </div>
+
+          <textarea 
+            id="notasInput" 
+            rows="9" 
+            placeholder="Pega aquí el texto completo...&#10;&#10;Ejemplo:&#10;Vuelo Madrid - Tokio 8 de noviembre con Iberia IB0281&#10;Día 1: Llegada a Narita, tren bala a Osaka y cena en Dotonbori. Hotel Miyako City.&#10;Día 2: Excursión a Nara para ver ciervos y templo Todai-ji...&#10;Día 3: Kioto, Fushimi Inari y callejones de Gion..." 
+            required
+          ></textarea>
         </div>
 
-        <button type="submit" id="submitBtn" class="btn-submit">
-          <i class="fa-solid fa-wand-magic-sparkles"></i> Generar mi Web/App
+        <button type="submit" id="submitBtn" class="btn-submit" style="margin-top: 0.5rem;">
+          <i class="fa-solid fa-wand-magic-sparkles"></i> Compilar mi Web/App de Viaje
         </button>
       </form>
 
       <!-- Estado de Carga -->
       <div id="loadingBox">
         <i class="fa-solid fa-circle-notch spinner"></i>
-        <h3 style="color: #fff; font-size: 1.15rem; margin-bottom: 0.25rem;">Compilando tu Web/App...</h3>
-        <p style="color: var(--text-muted); font-size: 0.88rem;">Estructurando el itinerario, mapas offline y listas interactivas.</p>
+        <h3 style="color: #fff; font-size: 1.15rem; margin-bottom: 0.25rem;">Compilando tu SuperApp ChesTrips...</h3>
+        <p style="color: var(--text-muted); font-size: 0.85rem;">Estructurando el itinerario, conversor de divisas, pasaporte gourmet y tarjetas de taxi (tarda ~10 segundos).</p>
       </div>
 
       <!-- Resultado Final -->
       <div id="resultBox">
-        <div style="font-size: 2rem; color: var(--accent); margin-bottom: 0.5rem;">
+        <div style="font-size: 2.2rem; color: var(--accent); margin-bottom: 0.5rem;">
           <i class="fa-solid fa-circle-check"></i>
         </div>
-        <h2 style="font-size: 1.35rem; color: #fff; margin-bottom: 0.4rem;">¡Guía creada con éxito!</h2>
-        <p style="font-size: 0.88rem; color: var(--text-muted);">Escanea el código con la cámara de tu móvil o abre el enlace:</p>
+        <h2 style="font-size: 1.4rem; color: #fff; margin-bottom: 0.4rem;">¡Tu Web/App está lista!</h2>
+        <p style="font-size: 0.88rem; color: var(--text-muted);">Escanea el código con tu móvil o abre el enlace en una pestaña nueva:</p>
 
         <div class="qr-frame">
           <img id="qrImage" src="" alt="Código QR de la Guía">
@@ -385,12 +415,12 @@
 
         <div style="margin-top: 0.5rem;">
           <a id="appUrlBtn" href="#" target="_blank" class="btn-view">
-            <i class="fa-solid fa-arrow-up-right-from-square"></i> Abrir Guía Ahora
+            <i class="fa-solid fa-arrow-up-right-from-square"></i> Abrir Web/App
           </a>
         </div>
 
         <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 1.25rem;">
-          💡 <strong>Tip para el viaje:</strong> Ábrela en Safari o Chrome y pulsa <em>"Añadir a la pantalla de inicio"</em> para usarla como app nativa sin cobertura.
+          📲 <strong>Tip clave:</strong> Cuando se abra en tu navegador móvil, pulsa en el botón <em>Compartir</em> y selecciona <strong>"Añadir a la pantalla de inicio"</strong> para usarla a pantalla completa como una app nativa durante el viaje.
         </p>
       </div>
     </main>
