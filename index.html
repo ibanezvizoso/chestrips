@@ -76,20 +76,16 @@
       margin-bottom: 2.75rem;
     }
 
-    .brand-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.6rem;
-      background: #ffffff;
-      border: 1px solid var(--border-color);
-      padding: 0.35rem 0.9rem;
-      border-radius: 999px;
-      font-size: 0.82rem;
-      font-weight: 600;
-      color: #334155;
-      box-shadow: var(--shadow-sm);
+    .header-logo {
       margin-bottom: 1.5rem;
-      transition: transform 0.2s ease;
+      display: flex;
+      justify-content: center;
+    }
+
+    .header-logo img {
+      height: 48px; /* Ajusta aquí la altura a tu gusto (ej: 42px, 50px, 56px...) */
+      width: auto;
+      display: block;
     }
 
     .brand-pill:hover {
@@ -460,9 +456,8 @@
 
   <div class="container">
     <header>
-      <div class="brand-pill">
-        <span class="badge">Beta · 0 €</span>
-        <span>ChesTrips Engine</span>
+      <div class="header-logo">
+        <img src="/logo-header.svg" alt="ChesTrips">
       </div>
       <h1>Tu viaje en una <span>Web/App</span></h1>
       <p class="subtitle">Pega tus notas, reservas o itinerario en sucio. El compilador generará una guía interactiva lista para guardar en tu móvil.</p>
