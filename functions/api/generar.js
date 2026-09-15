@@ -41,7 +41,13 @@ REGLAS:
     });
 
     if (!geminiResponse.ok) {
-      return new Response(JSON.stringify({ error: "Error en el motor de IA." }), { status: 502 });
+      const errorDetalle = await geminiResponse.text();
+      return new Response(JSON.stringify({ 
+        error: `Error Google (${geminiResponse.status}): ${errorDetalle}` 
+      }), { 
+        status: 502, 
+        headers: { "Content-Type": "application/json" } 
+      });
     }
 
     const geminiData = await geminiResponse.json();
