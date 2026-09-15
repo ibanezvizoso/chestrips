@@ -371,6 +371,25 @@ const masterTemplateHtml = `<!DOCTYPE html>
       margin-left: 10px;
       margin-top: 3px;
     }
+    .share-btn {
+  background: var(--paper-card);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+}
+.share-btn:active {
+  background: var(--secondary-subtle);
+  color: var(--secondary);
+}
 
     .top-controls { max-width: 860px; margin: 12px auto 0; padding: 0 16px; }
     .search-box { position: relative; display: flex; align-items: center; }
@@ -612,16 +631,22 @@ const masterTemplateHtml = `<!DOCTYPE html>
 
   <!-- CABECERA (Desaparece en el scroll, sin contador) -->
   <header>
-    <div class="header-inner">
-      <div>
-        <div class="brand-title" id="hTitle">
-          <img src="/logo-header.svg" alt="ChesTrips">
-          <span>ChesTrips</span>
-        </div>
-        <div class="brand-dates" id="hDates">--</div>
+  <div class="header-inner">
+    <div>
+      <div class="brand-title" id="hTitle">
+        <img src="/logo-header.svg" alt="ChesTrips">
+        <span>ChesTrips</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px; margin-left: 10px; margin-top: 3px;">
+        <div class="brand-dates" id="hDates" style="margin: 0;">--</div>
+        <!-- Botón para compartir/copiar enlace -->
+        <button class="share-btn" onclick="app.shareTrip()" title="Compartir guía">
+          <i class="fa-solid fa-arrow-up-from-bracket"></i> <span id="shareText">Compartir</span>
+        </button>
       </div>
     </div>
-  </header>
+  </div>
+</header>
 
   <!-- BUSCADOR -->
   <div class="top-controls">
