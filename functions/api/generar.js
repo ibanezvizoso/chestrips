@@ -339,57 +339,67 @@ const masterTemplateHtml = `<!DOCTYPE html>
     h1, h2, h3, h4 { font-family: var(--font-display); letter-spacing: -0.015em; }
 
     /* Encabezado sin sticky: desaparece naturalmente al hacer scroll */
-    header {
-      background: color-mix(in srgb, var(--paper) 92%, transparent);
+   header {
+      background: color-mix(in srgb, var(--paper) 94%, transparent);
       border-bottom: 1px solid var(--border);
+      padding: 14px 16px 16px;
     }
     .header-inner {
       max-width: 860px;
       margin: 0 auto;
-      padding: 14px 16px;
       display: flex;
-      justify-content: flex-start;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .brand-top-row {
+      display: flex;
       align-items: center;
     }
-    .brand-title { 
-      display: flex; 
-      align-items: center; 
-      gap: 12px; 
-      font-weight: 800; 
-      font-size: 1.35rem; 
-      margin-left: 10px;
+    .header-brand-img {
+      height: 28px; /* Altura estilizada del logo sin comerse la pantalla */
+      width: auto;
+      display: block;
     }
-    .brand-title img { 
-      height: 44px; 
-      width: auto; 
-      display: block; 
+    .trip-title-row {
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 1.35rem;
+      line-height: 1.25;
+      color: var(--ink);
+      word-break: break-word; /* Para que títulos largos no desborden */
+      margin-top: 2px;
     }
-    .brand-dates { 
-      font-size: 0.78rem; 
-      color: var(--muted); 
-      font-weight: 600; 
-      margin-left: 10px;
-      margin-top: 3px;
+    .trip-meta-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .brand-dates {
+      font-size: 0.8rem;
+      color: var(--muted);
+      font-weight: 600;
     }
     .share-btn {
-  background: var(--paper-card);
-  border: 1px solid var(--border);
-  color: var(--muted);
-  font-size: 0.72rem;
-  font-weight: 700;
-  padding: 3px 8px;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  box-shadow: var(--shadow-sm);
-  transition: all 0.2s ease;
-}
-.share-btn:active {
-  background: var(--secondary-subtle);
-  color: var(--secondary);
-}
+      background: var(--paper-card);
+      border: 1px solid var(--border);
+      color: var(--ink);
+      font-size: 0.74rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      box-shadow: var(--shadow-sm);
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .share-btn:active {
+      background: var(--secondary-subtle);
+      color: var(--secondary);
+    }
 
     .top-controls { max-width: 860px; margin: 12px auto 0; padding: 0 16px; }
     .search-box { position: relative; display: flex; align-items: center; }
@@ -630,23 +640,21 @@ const masterTemplateHtml = `<!DOCTYPE html>
   </div>
 
   <!-- CABECERA (Desaparece en el scroll, sin contador) -->
+  <!-- CABECERA -->
   <header>
-  <div class="header-inner">
-    <div>
-      <div class="brand-title" id="hTitle">
-        <img src="/logo-header.svg" alt="ChesTrips">
-        <span>ChesTrips</span>
+    <div class="header-inner">
+      <div class="brand-top-row">
+        <img src="/logo-header.svg" alt="ChesTrips" class="header-brand-img">
       </div>
-      <div style="display: flex; align-items: center; gap: 10px; margin-left: 10px; margin-top: 3px;">
-        <div class="brand-dates" id="hDates" style="margin: 0;">--</div>
-        <!-- Botón para compartir/copiar enlace -->
+      <div class="trip-title-row" id="hTitle">--</div>
+      <div class="trip-meta-row">
+        <div class="brand-dates" id="hDates">--</div>
         <button class="share-btn" onclick="app.shareTrip()" title="Compartir guía">
-          <i class="fa-solid fa-arrow-up-from-bracket"></i> <span id="shareText">Compartir</span>
+          <i class="fa-solid fa-arrow-up-from-bracket"></i> <span id="shareText">Compartir enlace</span>
         </button>
       </div>
     </div>
-  </div>
-</header>
+  </header>
 
   <!-- BUSCADOR -->
   <div class="top-controls">
@@ -808,11 +816,7 @@ const masterTemplateHtml = `<!DOCTYPE html>
         if (!d) return;
 
         const hTitle = document.getElementById('hTitle');
-        if (hTitle) {
-          hTitle.innerHTML = \`
-            <img src="/logo-header.svg" alt="ChesTrips">
-            <span>\${d.tripTitle || 'ChesTrips'}</span>
-          \`;
+        if (hTitle) hTitle.textContent = d.tripTitle || 'ChesTrips';
         }
         
         const hDates = document.getElementById('hDates');
@@ -842,7 +846,62 @@ const masterTemplateHtml = `<!DOCTYPE html>
 
         this.loadChecklistStates();
       },
+async shareTrip() {
+        const url = window.location.href;
+        const title = window.__TRIP_DATA__?.tripTitle || 'Guía de viaje';
+        const textEl = document.getElementById('shareText');
 
+        const showCopiedFeedback = () => {
+          if (!textEl) return;
+          const prev = textEl.textContent;
+          textEl.textContent = '¡Enlace copiado!';
+          setTimeout(() => { textEl.textContent = prev; }, 2500);
+        };
+
+        // 1. Intentar el menú nativo del sistema operativo (móvil)
+        if (navigator.share) {
+          try {
+            await navigator.share({
+              title: title,
+              text: 'Guía de viaje: ' + title,
+              url: url
+            });
+            return;
+          } catch (e) {
+            // Si el usuario simplemente canceló el diálogo nativo, no hacemos nada
+            if (e.name === 'AbortError') return;
+          }
+        }
+
+        // 2. Fallback con Clipboard API moderno
+        if (navigator.clipboard && window.isSecureContext) {
+          try {
+            await navigator.clipboard.writeText(url);
+            showCopiedFeedback();
+            return;
+          } catch (_) {}
+        }
+
+        // 3. Fallback infalible de portapapeles (execCommand para PWA / navegadores restringidos)
+        try {
+          const tempInput = document.createElement('input');
+          tempInput.value = url;
+          tempInput.style.position = 'fixed';
+          tempInput.style.opacity = '0';
+          document.body.appendChild(tempInput);
+          tempInput.focus();
+          tempInput.select();
+          const ok = document.execCommand('copy');
+          document.body.removeChild(tempInput);
+          if (ok) {
+            showCopiedFeedback();
+            return;
+          }
+        } catch (_) {}
+
+        // 4. Último recurso si el sistema bloquea todo
+        prompt("Copia el enlace de tu guía:", url);
+      },
       tab(tabId, btn) {
         document.querySelectorAll('.tab-view').forEach(t => t.classList.remove('active'));
         document.querySelectorAll('.dock-tab-btn').forEach(b => b.classList.remove('active'));
