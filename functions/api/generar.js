@@ -360,7 +360,7 @@ const masterTemplateHtml = `<!DOCTYPE html>
       margin-left: 10px;
     }
     .brand-title img { 
-      height: 56px; 
+      height: 44px; 
       width: auto; 
       display: block; 
     }
