@@ -939,12 +939,12 @@ const masterTemplateHtml = `<!DOCTYPE html>
       renderStats(s) {
         const c = document.getElementById('statGrid');
         if (!c || !s) return;
-        c.innerHTML = \`
-          <div class="stat-card"><div class="stat-num">\${s.days || '--'}</div><div class="stat-lbl">Días</div></div>
-          <div class="stat-card"><div class="stat-num">\${s.cities || '--'}</div><div class="stat-lbl">Zonas</div></div>
-          <div class="stat-card"><div class="stat-num">\${s.hotels || '--'}</div><div class="stat-lbl">Hoteles</div></div>
-          <div class="stat-card"><div class="stat-num">\${s.flights || '--'}</div><div class="stat-lbl">Vuelos</div></div>
-        \`;
+        c.innerHTML = `
+          <div class="stat-card"><div class="stat-num">${s.days || '--'}</div><div class="stat-lbl">Días</div></div>
+          <div class="stat-card"><div class="stat-num">${s.cities || '--'}</div><div class="stat-lbl">Zonas</div></div>
+          <div class="stat-card"><div class="stat-num">${s.hotels || '--'}</div><div class="stat-lbl">Hoteles</div></div>
+          <div class="stat-card"><div class="stat-num">${s.flights || '--'}</div><div class="stat-lbl">Vuelos</div></div>
+        `;
       },
 
       renderFlights(fl) {
@@ -952,22 +952,22 @@ const masterTemplateHtml = `<!DOCTYPE html>
         if (!c) return;
         if (!fl || !fl.length) { c.style.display = 'none'; return; }
         c.style.display = 'block';
-        c.innerHTML = \`
+        c.innerHTML = `
           <div class="flight-card">
             <h4 style="font-size:0.9rem; font-weight:800; margin-bottom:10px; color:var(--primary);">
-              <i class="fa-solid fa-plane"></i> Vuelos Reservados \${fl[0]?.locator ? '<span style="font-family:var(--font-mono); font-size:0.8rem; font-weight:700; color:var(--muted); margin-left:6px;">(Ref: ' + fl[0].locator + ')</span>' : ''}
+              <i class="fa-solid fa-plane"></i> Vuelos Reservados ${fl[0]?.locator ? '<span style="font-family:var(--font-mono); font-size:0.8rem; font-weight:700; color:var(--muted); margin-left:6px;">(Ref: ' + fl[0].locator + ')</span>' : ''}
             </h4>
-            \${fl.map(f => \`
+            ${fl.map(f => `
               <div class="flight-segment">
                 <div>
-                  <span class="flight-code">\${f.code || 'Vuelo'}</span>
-                  <span class="flight-route">\${f.route || ''}</span>
+                  <span class="flight-code">${f.code || 'Vuelo'}</span>
+                  <span class="flight-route">${f.route || ''}</span>
                 </div>
-                <div class="flight-time">\${f.time || ''}</div>
+                <div class="flight-time">${f.time || ''}</div>
               </div>
-            \`).join('')}
+            `).join('')}
           </div>
-        \`;
+        `;
       },
 
       renderQuickFacts(qf) {
@@ -975,24 +975,24 @@ const masterTemplateHtml = `<!DOCTYPE html>
         if (!c) return;
         if (!qf || !qf.length) { c.style.display = 'none'; return; }
         c.style.display = 'grid';
-        c.innerHTML = qf.map(f => \`
+        c.innerHTML = qf.map(f => `
           <div class="fact-card">
-            <i class="fa-solid \${f.icon || 'fa-circle-info'}"></i>
-            <h5>\${f.title}</h5>
-            <p>\${f.desc}</p>
+            <i class="fa-solid ${f.icon || 'fa-circle-info'}"></i>
+            <h5>${f.title}</h5>
+            <p>${f.desc}</p>
           </div>
-        \`).join('');
+        `).join('');
       },
 
       renderThread(th) {
         const c = document.getElementById('routeThread');
         if (!c || !th) return;
-        c.innerHTML = th.map(node => \`
-          <div class="thread-stop" onclick="app.filterByThread('\${node.query || node.name}')">
-            <i class="fa-solid \${node.icon || 'fa-location-dot'}"></i>
-            <span>\${node.name}</span>
+        c.innerHTML = th.map(node => `
+          <div class="thread-stop" onclick="app.filterByThread('${node.query || node.name}')">
+            <i class="fa-solid ${node.icon || 'fa-location-dot'}"></i>
+            <span>${node.name}</span>
           </div>
-        \`).join('');
+        `).join('');
       },
 
       filterByThread(q) {
@@ -1005,21 +1005,21 @@ const masterTemplateHtml = `<!DOCTYPE html>
         const c = document.getElementById('weatherList');
         if (!c) return;
         if (!w || !w.length) { c.innerHTML = '<p>Clima estacional favorable.</p>'; return; }
-        c.innerHTML = w.map(row => \`
-          <p style="margin-bottom:6px;"><strong>\${row.region}:</strong> \${row.temp} · \${row.desc}</p>
-        \`).join('');
+        c.innerHTML = w.map(row => `
+          <p style="margin-bottom:6px;"><strong>${row.region}:</strong> ${row.temp} · ${row.desc}</p>
+        `).join('');
       },
 
       renderTransports(tr) {
         const c = document.getElementById('transportsList');
         if (!c) return;
         if (!tr || !tr.length) { c.innerHTML = '<p style="font-size:0.86rem; color:var(--muted);">Sin traslados complejos registrados.</p>'; return; }
-        c.innerHTML = tr.map(t => \`
+        c.innerHTML = tr.map(t => `
           <div style="padding:8px 0; border-bottom:1px solid var(--border-subtle); font-size:0.86rem;">
-            <div style="font-weight:700; color:var(--primary);"><i class="fa-solid fa-route"></i> \${t.date}: \${t.title}</div>
-            <div style="color:var(--muted); font-size:0.8rem;">\${t.desc}</div>
+            <div style="font-weight:700; color:var(--primary);"><i class="fa-solid fa-route"></i> ${t.date}: ${t.title}</div>
+            <div style="color:var(--muted); font-size:0.8rem;">${t.desc}</div>
           </div>
-        \`).join('');
+        `).join('');
       },
 
       initMap() {
@@ -1047,7 +1047,7 @@ const masterTemplateHtml = `<!DOCTYPE html>
               color: '#ffffff',
               weight: 2,
               fillOpacity: 1
-            }).addTo(this.map).bindPopup(\`<b>Día \${day.day}: \${day.title}</b><br>\${day.meta || ''}\`);
+            }).addTo(this.map).bindPopup(`<b>Día ${day.day}: ${day.title}</b><br>${day.meta || ''}`);
           }
         });
 
@@ -1059,37 +1059,37 @@ const masterTemplateHtml = `<!DOCTYPE html>
       renderItinerary(days) {
         const c = document.getElementById('itineraryContainer');
         if (!c) return;
-        c.innerHTML = (days || []).map((day, idx) => \`
-          <div class="day-card searchable-card \${idx === 0 ? 'open' : ''}" data-search="\${day.title} \${day.meta || ''} \${day.hotel || ''}">
+        c.innerHTML = (days || []).map((day, idx) => `
+          <div class="day-card searchable-card ${idx === 0 ? 'open' : ''}" data-search="${day.title} ${day.meta || ''} ${day.hotel || ''}">
             <div class="day-header" onclick="this.parentElement.classList.toggle('open')">
               <div style="display:flex; align-items:center; min-width:0;">
-                <span class="day-badge">\${day.dateBadge || 'DÍA ' + day.day}</span>
+                <span class="day-badge">${day.dateBadge || 'DÍA ' + day.day}</span>
                 <div class="day-title-wrap">
                   <div class="day-title">
-                    Día \${day.day}: \${day.title}
-                    \${day.isSuggestion ? '<span class="suggestion-chip"><i class="fa-solid fa-sparkles"></i> Sugerencia</span>' : ''}
+                    Día ${day.day}: ${day.title}
+                    ${day.isSuggestion ? '<span class="suggestion-chip"><i class="fa-solid fa-sparkles"></i> Sugerencia</span>' : ''}
                   </div>
-                  <div class="day-meta">\${day.meta || ''}</div>
+                  <div class="day-meta">${day.meta || ''}</div>
                 </div>
               </div>
               <i class="fa-solid fa-chevron-down day-chevron"></i>
             </div>
             <div class="day-body">
-              \${day.historyContext ? \`<div class="history-box"><i class="fa-solid fa-landmark"></i> \${day.historyContext}</div>\` : ''}
-              \${day.hotel ? \`
+              ${day.historyContext ? `<div class="history-box"><i class="fa-solid fa-landmark"></i> ${day.historyContext}</div>` : ''}
+              ${day.hotel ? `
                 <div class="hotel-subcard">
-                  <div style="font-weight:700; color:var(--secondary);"><i class="fa-solid fa-hotel"></i> \${day.hotel}</div>
-                  \${day.hotelAddress ? \`<div style="font-size:0.8rem; color:var(--muted);">\${day.hotelAddress}</div>\` : ''}
-                  \${day.hotelMapsUrl ? \`<a href="\${day.hotelMapsUrl}" target="_blank" class="action-btn"><i class="fa-solid fa-map-location-dot"></i> Google Maps</a>\` : ''}
-                </div>\` : ''}
+                  <div style="font-weight:700; color:var(--secondary);"><i class="fa-solid fa-hotel"></i> ${day.hotel}</div>
+                  ${day.hotelAddress ? `<div style="font-size:0.8rem; color:var(--muted);">${day.hotelAddress}</div>` : ''}
+                  ${day.hotelMapsUrl ? `<a href="${day.hotelMapsUrl}" target="_blank" class="action-btn"><i class="fa-solid fa-map-location-dot"></i> Google Maps</a>` : ''}
+                </div>` : ''}
               <ul class="clean-steps">
-                \${(day.steps || []).map(s => \`<li>\${s}</li>\`).join('')}
+                ${(day.steps || []).map(s => `<li>${s}</li>`).join('')}
               </ul>
-              \${day.cultureTip ? \`<div class="tip-card" style="border-left-color:var(--secondary);"><i class="fa-solid fa-eye"></i> <strong>Cultura:</strong> \${day.cultureTip}</div>\` : ''}
-              \${day.practicalTip ? \`<div class="tip-card"><i class="fa-solid fa-lightbulb"></i> <strong>Consejo:</strong> \${day.practicalTip}</div>\` : ''}
+              ${day.cultureTip ? `<div class="tip-card" style="border-left-color:var(--secondary);"><i class="fa-solid fa-eye"></i> <strong>Cultura:</strong> ${day.cultureTip}</div>` : ''}
+              ${day.practicalTip ? `<div class="tip-card"><i class="fa-solid fa-lightbulb"></i> <strong>Consejo:</strong> ${day.practicalTip}</div>` : ''}
             </div>
           </div>
-        \`).join('');
+        `).join('');
       },
 
       toggleAllDays() {
@@ -1123,24 +1123,24 @@ const masterTemplateHtml = `<!DOCTYPE html>
 
         const chipsContainer = document.getElementById('fxChips');
         if (chipsContainer) {
-          chipsContainer.innerHTML = (curr.quickChips || []).map(chip => \`
-            <span class="fx-chip" onclick="document.getElementById('fxLocal').value=\${chip}; app.calcFxLocal();">\${chip.toLocaleString()} \${curr.code}</span>
-          \`).join('');
+          chipsContainer.innerHTML = (curr.quickChips || []).map(chip => `
+            <span class="fx-chip" onclick="document.getElementById('fxLocal').value=${chip}; app.calcFxLocal();">${chip.toLocaleString()} ${curr.code}</span>
+          `).join('');
         }
       },
 
       renderGourmet(gList) {
         const c = document.getElementById('gourmetList');
         if (!c || !gList) return;
-        c.innerHTML = gList.map((g, idx) => \`
-          <div class="check-line" onclick="app.toggleCheck('gourmet', \${idx}, this, event)">
-            <input type="checkbox" id="chk-g-\${idx}" onclick="event.stopPropagation(); app.toggleCheck('gourmet', \${idx}, this.parentElement, event)">
-            <label for="chk-g-\${idx}" style="cursor:pointer; flex:1;">
-              <strong>\${g.dish}</strong> \${g.city ? '(' + g.city + ')' : ''}: \${g.desc}
-              \${g.recommendedSpot ? '<span style="color:var(--primary); font-weight:700; display:block; font-size:0.78rem; margin-top:2px;"><i class="fa-solid fa-location-dot"></i> Recomendado: ' + g.recommendedSpot + '</span>' : ''}
+        c.innerHTML = gList.map((g, idx) => `
+          <div class="check-line" onclick="app.toggleCheck('gourmet', ${idx}, this, event)">
+            <input type="checkbox" id="chk-g-${idx}" onclick="event.stopPropagation(); app.toggleCheck('gourmet', ${idx}, this.parentElement, event)">
+            <label for="chk-g-${idx}" style="cursor:pointer; flex:1;">
+              <strong>${g.dish}</strong> ${g.city ? '(' + g.city + ')' : ''}: ${g.desc}
+              ${g.recommendedSpot ? '<span style="color:var(--primary); font-weight:700; display:block; font-size:0.78rem; margin-top:2px;"><i class="fa-solid fa-location-dot"></i> Recomendado: ' + g.recommendedSpot + '</span>' : ''}
             </label>
           </div>
-        \`).join('');
+        `).join('');
         this.calcProgress('gourmet');
       },
 
@@ -1149,36 +1149,36 @@ const masterTemplateHtml = `<!DOCTYPE html>
         if (!c) return;
         if (!cur || !cur.length) { c.style.display = 'none'; return; }
         c.style.display = 'block';
-        c.innerHTML = cur.map(row => \`
+        c.innerHTML = cur.map(row => `
           <div class="curiosity-card">
-            <h5><i class="fa-solid \${row.icon || 'fa-landmark'}"></i> \${row.title}</h5>
-            <p>\${row.desc}</p>
+            <h5><i class="fa-solid ${row.icon || 'fa-landmark'}"></i> ${row.title}</h5>
+            <p>${row.desc}</p>
           </div>
-        \`).join('');
+        `).join('');
       },
 
       renderEtiquette(etList) {
         const c = document.getElementById('etiquetteList');
         if (!c || !etList) return;
-        c.innerHTML = etList.map(e => \`
+        c.innerHTML = etList.map(e => `
           <div class="check-box-group" style="margin-bottom:12px;">
-            <h3><i class="fa-solid \${e.icon || 'fa-handshake'}"></i> \${e.title}</h3>
-            <p style="font-size:0.86rem; color:var(--muted); line-height:1.45;">\${e.desc}</p>
+            <h3><i class="fa-solid ${e.icon || 'fa-handshake'}"></i> ${e.title}</h3>
+            <p style="font-size:0.86rem; color:var(--muted); line-height:1.45;">${e.desc}</p>
           </div>
-        \`).join('');
+        `).join('');
       },
 
       renderFlashcards(cards) {
         const c = document.getElementById('fcGrid');
         if (!c || !cards) return;
-        c.innerHTML = cards.map(fc => \`
-          <div class="flashcard" onclick="app.openModal('\${fc.category || ''}', '\${fc.local}', '\${fc.phonetic || ''}', '\${fc.spanish}')">
-            <div style="font-size:0.75rem; font-weight:800; color:var(--muted);">\${fc.category || 'Frase'}</div>
-            <div style="font-size:1.05rem; font-weight:800; color:var(--secondary); margin:4px 0;">\${fc.local}</div>
-            <div style="font-family:var(--font-mono); font-size:0.75rem; color:var(--accent);">\${fc.phonetic || ''}</div>
-            <div style="font-size:0.82rem; margin-top:2px;">\${fc.spanish}</div>
+        c.innerHTML = cards.map(fc => `
+          <div class="flashcard" onclick="app.openModal('${fc.category || ''}', '${fc.local}', '${fc.phonetic || ''}', '${fc.spanish}')">
+            <div style="font-size:0.75rem; font-weight:800; color:var(--muted);">${fc.category || 'Frase'}</div>
+            <div style="font-size:1.05rem; font-weight:800; color:var(--secondary); margin:4px 0;">${fc.local}</div>
+            <div style="font-family:var(--font-mono); font-size:0.75rem; color:var(--accent);">${fc.phonetic || ''}</div>
+            <div style="font-size:0.82rem; margin-top:2px;">${fc.spanish}</div>
           </div>
-        \`).join('');
+        `).join('');
       },
 
       openModal(cat, loc, pho, spa) {
@@ -1198,17 +1198,17 @@ const masterTemplateHtml = `<!DOCTYPE html>
         if (!c || !quiz || !quiz.length) return;
         const scoreEl = document.getElementById('quizScoreText');
         if (scoreEl) scoreEl.textContent = '0 / ' + quiz.length;
-        c.innerHTML = quiz.map((q, idx) => \`
-          <div class="quiz-card" id="qcard-\${idx}">
-            <div class="quiz-q">\${idx + 1}. \${q.question}</div>
+        c.innerHTML = quiz.map((q, idx) => `
+          <div class="quiz-card" id="qcard-${idx}">
+            <div class="quiz-q">${idx + 1}. ${q.question}</div>
             <div class="quiz-opts">
-              \${q.options.map((opt, oIdx) => \`
-                <button class="quiz-btn" onclick="app.answerQuiz(\${idx}, \${oIdx}, \${q.correct})">\${opt}</button>
-              \`).join('')}
+              ${q.options.map((opt, oIdx) => `
+                <button class="quiz-btn" onclick="app.answerQuiz(${idx}, ${oIdx}, ${q.correct})">${opt}</button>
+              `).join('')}
             </div>
-            <div class="quiz-exp" id="qexp-\${idx}">\${q.explanation}</div>
+            <div class="quiz-exp" id="qexp-${idx}">${q.explanation}</div>
           </div>
-        \`).join('');
+        `).join('');
       },
 
       answerQuiz(qIdx, oIdx, correct) {
@@ -1309,10 +1309,10 @@ const masterTemplateHtml = `<!DOCTYPE html>
         if (embassyEl && em) embassyEl.textContent = em.embassy || 'Consultar con el consulado general de tu país.';
         const phonesEl = document.getElementById('sosPhones');
         if (phonesEl && em) {
-          phonesEl.innerHTML = \`
-            <p>• <strong>Policía:</strong> \${em.police || '112'} | • <strong>Ambulancia:</strong> \${em.ambulance || '112'}</p>
-            \${em.hospital ? \`<p style="margin-top:6px;">• <strong>Hospital:</strong> \${em.hospital}</p>\` : ''}
-          \`;
+          phonesEl.innerHTML = `
+            <p>• <strong>Policía:</strong> ${em.police || '112'} | • <strong>Ambulancia:</strong> ${em.ambulance || '112'}</p>
+            ${em.hospital ? `<p style="margin-top:6px;">• <strong>Hospital:</strong> ${em.hospital}</p>` : ''}
+          `;
         }
       },
 
