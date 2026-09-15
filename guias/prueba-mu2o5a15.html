@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ChesTrips - España: Málaga y Cádiz</title>
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    :root {
+      --bg-main: #0b0f19;
+      --bg-card: #161e2e;
+      --bg-card-hover: #1f2a40;
+      --accent-malaga: #38bdf8;
+      --accent-cadiz: #fbbf24;
+      --accent-green: #34d399;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --border-color: #232d3f;
+      --radius: 12px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      padding-bottom: 70px; /* Space for mobile nav */
+      min-height: 100vh;
+    }
+
+    header {
+      background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+      padding: 24px 20px;
+      border-bottom: 1px solid var(--border-color);
+      text-align: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    header h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    header p {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* Container */
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+
+    /* Navigation / Tabs */
+    .nav-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(15, 23, 42, 0.95);
+      backdrop-filter: blur(10px);
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-around;
+      padding: 10px 0;
+      z-index: 1000;
+    }
+
+    .nav-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-size: 0.75rem;
+      gap: 4px;
+      cursor: pointer;
+      width: 25%;
+      transition: color 0.2s;
+    }
+
+    .nav-btn svg {
+      width: 20px;
+      height: 20px;
+      fill: currentColor;
+    }
+
+    .nav-btn.active {
+      color: var(--accent-malaga);
+    }
+
+    /* Tab Contents */
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    /* Cards */
+    .card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .badge {
+      font-size: 0.75rem;
+      padding: 4px 8px;
+      border-radius: 20px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .badge-malaga {
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--accent-malaga);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+    }
+
+    .badge-cadiz {
+      background: rgba(251, 191, 36, 0.15);
+      color: var(--accent-cadiz);
+      border: 1px solid rgba(251, 191, 36, 0.3);
+    }
+
+    .day-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    .day-desc {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .activities {
+      list-style: none;
+      margin-top: 10px;
+    }
+
+    .activities li {
+      position: relative;
+      padding-left: 20px;
+      margin-bottom: 8px;
+      font-size: 0.88rem;
+      color: #d1d5db;
+    }
+
+    .activities li::before {
+      content: "•";
+      position: absolute;
+      left: 6px;
+      color: var(--accent-malaga);
+      font-weight: bold;
+    }
+
+    .cadiz-list li::before {
+      color: var(--accent-cadiz);
+    }
+
+    /* Map Section */
+    #map {
+      width: 100%;
+      height: 450px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border-color);
+    }
+
+    /* Checklist Section */
+    .checklist-input-group {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    input[type="text"], textarea {
+      width: 100%;
+      background-color: #0f172a;
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      outline: none;
+    }
+
+    input[type="text"]:focus, textarea:focus {
+      border-color: var(--accent-malaga);
+    }
+
+    .btn {
+      background: var(--accent-malaga);
+      color: #000;
+      border: none;
+      padding: 12px 18px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .btn:active {
+      opacity: 0.8;
+    }
+
+    .check-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      margin-bottom: 8px;
+    }
+
+    .check-item-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .check-item input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--accent-malaga);
+      cursor: pointer;
+    }
+
+    .check-item.completed span {
+      text-decoration: line-through;
+      color: var(--text-muted);
+    }
+
+    .delete-btn {
+      background: none;
+      border: none;
+      color: #ef4444;
+      cursor: pointer;
+      font-size: 1.1rem;
+    }
+
+    /* Notes Section */
+    textarea {
+      resize: vertical;
+      min-height: 200px;
+      line-height: 1.5;
+    }
+
+    /* Section Headers */
+    .section-title {
+      font-size: 1.2rem;
+      margin-bottom: 16px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>✈️ ChesTrips España</h1>
+    <p>10 Días: Málaga (1-5) & Cádiz (6-10)</p>
+  </header>
+
+  <div class="container">
+
+    <!-- ITINERARY TAB -->
+    <section id="tab-itinerary" class="tab-content active">
+      <h2 class="section-title">📍 Itinerario de Viaje</h2>
+
+      <!-- MALAGA (Días 1-5) -->
+      <div class="card">
+        <div class="card-header">
+          <span class="day-title">Día 1: Llegada y Alcazaba</span>
+          <span class="badge badge-malaga">Málaga</span>
+        </div>
+        <ul class="activities">
+          <li>Check-in en el alojamiento y primer contacto con el centro histórico.</li>
+          <li>Visita a la Alcazaba y las ruinas del Teatro Romano.</li>
+          <li>Subida al Castillo de Gibralfaro para ver el atardecer sobre la bahía.</li>
+          <li>Cena de tapas en el Pimpi o por la Plaza del Obispo.</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="day-title">Día 2: Arte, Centro y Mar</span>
+          <span class="badge badge-malaga">Málaga</span>
+        </div>
+        <ul class="activities">
+          <li>Recorrido por el Museo Picasso de Málaga.</li>
+          <li>Paseo comercial por Calle Larios y Plaza de la Constitución.</li>
+          <li>Almuerzo de espetos de sardinas en el Paseo Marítimo / La Malagueta.</li>
+          <li>Tarde de relax en la playa y paseo al atardecer por Muelle Uno.</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="day-title">Día 3: Aventura en Caminito del Rey</span>
+          <span class="badge badge-malaga">Málaga</span>
+        </div>
+        <ul class="activities">
+          <li>Excursión de día completo al Caminito del Rey (El Chorro).</li>
+          <li>Recorrido por las pasarelas colgadas en los desfiladeros del río Guadalhorce.</li>
+          <li>Regreso a Málaga y cena tranquila por el barrio del Soho.</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="day-title">Día 4: Frigiliana y Nerja</span>
+          <span class="badge badge-malaga">Málaga</span>
+        </div>
+        <ul class="activities">
+          <li>Excursión hacia la Axarquía: visita al pueblo blanco de Frigiliana.</li>
+          <li>Visita a Nerja y contemplación del mar desde el Balcón de Europa.</li>
+          <li>Visita opcional a las Cuevas de Nerja o baño en la Playa de Maro.</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="day-title">Día 5: Mercado y Traslado a Cádiz</span>
+          <span class="badge badge-malaga">Málaga</span>
+        </div>
+        <ul class="activities">
+          <li>Visita al Mercado Central de Atarazanas para degustar producto local.</li>
+          <li>Último paseo por Málaga y compras de recuerdos.</li>
+          <li>Trayecto en coche o tren hacia la costa atlántica: llegada a Cádiz.</li>
+          <li>Paseo nocturno inicial por el casco antiguo gaditano.</li>
+        </ul>
+      </div>
+
+      <!-- CADIZ (Días 6-10) -->
+      <div class="card">
+        <div class="card-header">
+          <span class="day-title">Día 6: La Tacita de Plata y Catedral</span>
+          <span class="badge badge-cadiz">Cádiz</span>
+        </div>
+        <ul class="activities cadiz-list">
+          <li>Visita a la Catedral de Cádiz y subida a la Torre del Campanario.</li>
+          <li>Paseo por el Barrio del Pópulo (el más antiguo de la ciudad).</li>
+          <li>Plaza de las Flores y ambiente en el Mercado Central de Abastos.</li>
+          <li>Degustación del famoso pescaíto frito gaditano.</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="day-title">Día 7: La Caleta y Castillos</span>
+          <span class="badge badge-cadiz">Cádiz</span>
+        </div>
+        <ul class="activities cadiz-list">
+          <li>Recorrido histórico por el Castillo de San Sebastián y Castillo de Santa Catalina.</li>
+          <li>Tarde de relax en la emblemática Playa de La Caleta.</li>
+          <li>Atardecer desde el Paseo Fernando Quiñones.</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="day-title">Día 8: Excursión a Jerez de la Frontera</span>
+          <span class="badge badge-cadiz">Cádiz</span>
+        </div>
+        <ul class="activities cadiz-list">
+          <li>Escapada a Jerez de la Frontera (a 30 min de Cádiz).</li>
+          <li>Visita a una bodega tradicional de vino de Jerez (Jerez-Xérès-Sherry).</li>
+          <li>Espectáculo de arte ecuestre o paseo por el Alcázar de Jerez.</li>
+          <li>Regreso a Cádiz para cenar en la zona de la Viña.</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="day-title">Día 9: Pueblos Blancos o Playa de Bolonia</span>
+          <span class="badge badge-cadiz">Cádiz</span>
+        </div>
+        <ul class="activities cadiz-list">
+          <li>Excursión a Vejer de la Frontera (pueblo blanco amurallado sobre la colina).</li>
+          <li>O bien: Visita a la duna y ruinas romanas de Baelo Claudia en la Playa de Bolonia.</li>
+          <li>Última noche de cena y ambiente marinero en Cádiz.</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="day-title">Día 10: Torre Tavira y Despedida</span>
+          <span class="badge badge-cadiz">Cádiz</span>
+        </div>
+        <ul class="activities cadiz-list">
+          <li>Visita a la Torre Tavira para ver el panorama a través de la Cámara Oscura.</li>
+          <li>Últimas compras por las calles comerciales del centro.</li>
+          <li>Check-out y fin del viaje por tierras andaluzas.</li>
+        </ul>
+      </div>
+
+    </section>
+
+    <!-- MAP TAB -->
+    <section id="tab-map" class="tab-content">
+      <h2 class="section-title">🗺️ Mapa de Paradas Clave</h2>
+      <div id="map"></div>
+    </section>
+
+    <!-- CHECKLIST TAB -->
+    <section id="tab-checklist" class="tab-content">
+      <h2 class="section-title">🧳 Equipaje y Prep Checklist</h2>
+      <div class="checklist-input-group">
+        <input type="text" id="checklist-input" placeholder="Añadir elemento (ej. Cargador, Gafas de sol)...">
+        <button class="btn" onclick="addChecklistItem()">Añadir</button>
+      </div>
+      <div id="checklist-container">
+        <!-- Dynamic list -->
+      </div>
+    </section>
+
+    <!-- NOTES TAB -->
+    <section id="tab-notes" class="tab-content">
+      <h2 class="section-title">📝 Notas del Viaje</h2>
+      <div class="card">
+        <textarea id="notes-input" placeholder="Escribe aquí reservas, confirmaciones, notas de restaurante, datos del hotel..." oninput="saveNotes()"></textarea>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Bottom Navigation -->
+  <nav class="nav-bar">
+    <button class="nav-btn active" onclick="switchTab('itinerary', this)">
+      <svg viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/></svg>
+      Itinerario
+    </button>
+    <button class="nav-btn" onclick="switchTab('map', this)">
+      <svg viewBox="0 0 24 24"><path d="M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z"/></svg>
+      Mapa
+    </button>
+    <button class="nav-btn" onclick="switchTab('checklist', this)">
+      <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+      Equipaje
+    </button>
+    <button class="nav-btn" onclick="switchTab('notes', this)">
+      <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+      Notas
+    </button>
+  </nav>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    // System Initialization
+    let mapInitialized = false;
+    let map;
+
+    // Navigation Switcher
+    function switchTab(tabId, btnElement) {
+      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+      document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+
+      document.getElementById('tab-' + tabId).classList.add('active');
+      btnElement.classList.add('active');
+
+      if (tabId === 'map') {
+        if (!mapInitialized) {
+          initMap();
+          mapInitialized = true;
+        } else {
+          setTimeout(() => { map.invalidateSize(); }, 100);
+        }
+      }
+    }
+
+    // Leaflet Map Initialization
+    function initMap() {
+      map = L.map('map').setView([36.6, -5.3], 8);
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 18,
+        attribution: '&copy; OpenStreetMap'
+      }).addTo(map);
+
+      // Locations Data
+      const locations = [
+        { name: "Málaga - Centro Histórico", lat: 36.7213, lng: -4.4214, type: "malaga" },
+        { name: "Caminito del Rey", lat: 36.9157, lng: -4.7727, type: "malaga" },
+        { name: "Frigiliana y Nerja", lat: 36.7492, lng: -3.8767, type: "malaga" },
+        { name: "Cádiz - Casco Antiguo", lat: 36.5271, lng: -6.2886, type: "cadiz" },
+        { name: "Jerez de la Frontera", lat: 36.6850, lng: -6.1370, type: "cadiz" },
+        { name: "Vejer de la Frontera", lat: 36.2520, lng: -5.9631, type: "cadiz" },
+        { name: "Playa de Bolonia", lat: 36.0898, lng: -5.7681, type: "cadiz" }
+      ];
+
+      locations.forEach(loc => {
+        const marker = L.marker([loc.lat, loc.lng]).addTo(map);
+        marker.bindPopup(`<b>${loc.name}</b><br>${loc.type === 'malaga' ? 'Málaga (Días 1-5)' : 'Cádiz (Días 6-10)'}`);
+      });
+    }
+
+    // Checklist Management
+    const defaultChecklist = [
+      { text: "Documento de Identidad / Pasaporte", checked: false },
+      { text: "Cargador móvil y batería externa", checked: false },
+      { text: "Ropa de baño y protector solar", checked: false },
+      { text: "Calzado cómodo para caminar", checked: false },
+      { text: "Entradas para Caminito del Rey", checked: false }
+    ];
+
+    function getChecklist() {
+      const stored = localStorage.getItem('chestrips_checklist');
+      return stored ? JSON.parse(stored) : defaultChecklist;
+    }
+
+    function saveChecklist(items) {
+      localStorage.setItem('chestrips_checklist', JSON.stringify(items));
+      renderChecklist();
+    }
+
+    function renderChecklist() {
+      const items = getChecklist();
+      const container = document.getElementById('checklist-container');
+      container.innerHTML = '';
+
+      items.forEach((item, index) => {
+        const div = document.createElement('div');
+        div.className = `check-item ${item.checked ? 'completed' : ''}`;
+        div.innerHTML = `
+          <div class="check-item-left">
+            <input type="checkbox" ${item.checked ? 'checked' : ''} onchange="toggleCheckItem(${index})">
+            <span>${escapeHtml(item.text)}</span>
+          </div>
+          <button class="delete-btn" onclick="deleteCheckItem(${index})">&times;</button>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function addChecklistItem() {
+      const input = document.getElementById('checklist-input');
+      const text = input.value.trim();
+      if (!text) return;
+
+      const items = getChecklist();
+      items.push({ text: text, checked: false });
+      saveChecklist(items);
+      input.value = '';
+    }
+
+    function toggleCheckItem(index) {
+      const items = getChecklist();
+      items[index].checked = !items[index].checked;
+      saveChecklist(items);
+    }
+
+    function deleteCheckItem(index) {
+      const items = getChecklist();
+      items.splice(index, 1);
+      saveChecklist(items);
+    }
+
+    // Notes Management
+    function loadNotes() {
+      const notes = localStorage.getItem('chestrips_notes') || '';
+      document.getElementById('notes-input').value = notes;
+    }
+
+    function saveNotes() {
+      const notes = document.getElementById('notes-input').value;
+      localStorage.setItem('chestrips_notes', notes);
+    }
+
+    // Helper Utility
+    function escapeHtml(string) {
+      return String(string).replace(/[&<>"']/g, function (s) {
+        return {
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          '"': '&quot;',
+          "'": '&#39;'
+        }[s];
+      });
+    }
+
+    // On Load
+    document.addEventListener('DOMContentLoaded', () => {
+      renderChecklist();
+      loadNotes();
+    });
+  </script>
+</body>
+</html>
