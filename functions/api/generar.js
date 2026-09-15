@@ -13,6 +13,12 @@ export async function onRequestPost(context) {
     // 1. Limpieza básica de slug para el nombre del archivo
     const destinoSlug = (nombreDestino || "viaje")
       .toLowerCase()
+
+
+
+
+
+      
       .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // Quitar acentos
       .replace(/[^a-z0-9]/g, "-")
       .slice(0, 25);
@@ -63,7 +69,7 @@ REGLA DE SALIDA ESTRICTA:
 `;
 
     // 3. Llamada a Gemini Flash API
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${env.GEMINI_API_KEY}`;
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${env.GEMINI_API_KEY}`;
     const geminiResponse = await fetch(geminiUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
