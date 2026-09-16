@@ -864,7 +864,15 @@ const masterTemplateHtml = `<!DOCTYPE html>
 
         this.loadChecklistStates();
       },
-
+// --- Registro del Service Worker para Modo Avión ---
+        if ('serviceWorker' in navigator) {
+          window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js')
+              .then(() => console.log('ChesTrips SW activo'))
+              .catch(err => console.warn('Error SW:', err));
+          });
+        }
+      },
       async shareTrip() {
         const url = window.location.href;
         const title = window.__TRIP_DATA__?.tripTitle || 'Guía de viaje';
