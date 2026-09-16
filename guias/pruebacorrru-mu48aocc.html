@@ -1,0 +1,1551 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>ChesTrips Engine | Cuaderno de Ruta</title>
+  <link rel="icon" type="image/svg+xml" href="/icon.svg">
+  <link rel="apple-touch-icon" href="/icon-192.png">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#121413">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;700;800&family=JetBrains+Mono:wght@500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <style>
+    :root {
+      --paper: #faf7f2;
+      --paper-card: #ffffff;
+      --paper-muted: #f3ede2;
+      --paper-subtle: #ece4d5;
+      --ink: #1a1c1a;
+      --muted: #626863;
+      --border: #e6dec9;
+      --border-subtle: #ede5d7;
+
+      --primary: #bd3126;
+      --primary-subtle: #fbeae8;
+      --secondary: #2f5a38;
+      --secondary-subtle: #e5efe7;
+      --accent: #ad7919;
+      --accent-subtle: #f8f1de;
+
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --shadow-sm: 0 2px 5px rgba(30, 27, 24, 0.04);
+      --shadow-md: 0 8px 20px -4px rgba(30, 27, 24, 0.08);
+
+      --font-display: 'Fraunces', Georgia, serif;
+      --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --paper: #121413;
+        --paper-card: #1c201e;
+        --paper-muted: #242826;
+        --paper-subtle: #2d3330;
+        --ink: #f3f4f3;
+        --muted: #a1a8a3;
+        --border: #2d332f;
+        --border-subtle: #252b27;
+
+        --primary: #e05246;
+        --primary-subtle: rgba(224, 82, 70, 0.16);
+        --secondary: #6cb07e;
+        --secondary-subtle: rgba(108, 176, 126, 0.15);
+        --accent: #e5b27d;
+        --accent-subtle: rgba(229, 178, 125, 0.15);
+
+        --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.35);
+        --shadow-md: 0 10px 24px -6px rgba(0, 0, 0, 0.55);
+      }
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--font-sans);
+      background-color: var(--paper);
+      color: var(--ink);
+      line-height: 1.6;
+      padding-bottom: 130px;
+    }
+    h1, h2, h3, h4 { font-family: var(--font-display); letter-spacing: -0.015em; }
+
+    /* Encabezado sin sticky: desaparece naturalmente al hacer scroll */
+    header {
+      background: color-mix(in srgb, var(--paper) 94%, transparent);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 16px 16px;
+    }
+    .header-inner {
+      max-width: 860px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .brand-top-row {
+      display: flex;
+      align-items: center;
+    }
+    .header-brand-img {
+      height: 28px;
+      width: auto;
+      display: block;
+    }
+    .trip-title-row {
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 1.35rem;
+      line-height: 1.25;
+      color: var(--ink);
+      word-break: break-word;
+      margin-top: 2px;
+    }
+    .trip-meta-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .brand-dates {
+      font-size: 0.8rem;
+      color: var(--muted);
+      font-weight: 600;
+    }
+    .share-btn {
+      background: var(--paper-card);
+      border: 1px solid var(--border);
+      color: var(--ink);
+      font-size: 0.74rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      box-shadow: var(--shadow-sm);
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .share-btn:active {
+      background: var(--secondary-subtle);
+      color: var(--secondary);
+    }
+
+    .top-controls { max-width: 860px; margin: 12px auto 0; padding: 0 16px; }
+    .search-box { position: relative; display: flex; align-items: center; }
+    .search-box i { position: absolute; left: 14px; color: var(--muted); font-size: 0.88rem; }
+    .search-box input {
+      width: 100%;
+      padding: 11px 14px 11px 40px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      background: var(--paper-card);
+      color: var(--ink);
+      font-size: 0.9rem;
+      outline: none;
+      box-shadow: var(--shadow-sm);
+    }
+
+    main { max-width: 860px; margin: 16px auto; padding: 0 16px; }
+    .tab-view { display: none; }
+    .tab-view.active { display: block; animation: tabFade 0.2s ease-out forwards; }
+    @keyframes tabFade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+    .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px; }
+    .stat-card {
+      background: var(--paper-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 12px 6px;
+      text-align: center;
+      box-shadow: var(--shadow-sm);
+    }
+    .stat-num { font-family: var(--font-display); font-weight: 700; font-size: 1.45rem; color: var(--primary); line-height: 1; }
+    .stat-lbl { font-size: 0.68rem; color: var(--muted); font-weight: 800; margin-top: 5px; }
+
+    .route-thread {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 2px 2px 12px;
+      margin-bottom: 14px;
+      scrollbar-width: none;
+    }
+    .route-thread::-webkit-scrollbar { display: none; }
+    .thread-stop {
+      flex: 0 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      cursor: pointer;
+      padding: 10px 14px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      background: var(--paper-card);
+      min-width: 82px;
+      box-shadow: var(--shadow-sm);
+    }
+    .thread-stop:active { background: var(--secondary-subtle); border-color: var(--secondary); }
+    .thread-stop i { font-size: 1.1rem; color: var(--secondary); }
+    .thread-stop span { font-size: 0.72rem; font-weight: 700; white-space: nowrap; }
+
+    /* ACORDEÓN DÍAS */
+    .day-card {
+      background: var(--paper-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      margin-bottom: 12px;
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+    }
+    .day-card.open { border-color: var(--secondary); }
+    .day-header { padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none; }
+    .day-badge {
+      font-family: var(--font-mono);
+      background: var(--secondary-subtle);
+      color: var(--secondary);
+      font-weight: 700;
+      font-size: 0.78rem;
+      padding: 5px 8px;
+      border-radius: var(--radius-sm);
+      min-width: 72px;
+      text-align: center;
+    }
+    .day-title-wrap { margin-left: 12px; }
+    .day-title { font-weight: 700; font-size: 0.95rem; line-height: 1.35; }
+    .day-meta { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+    .day-chevron { color: var(--muted); transition: transform 0.25s ease; font-size: 0.85rem; }
+    .day-card.open .day-chevron { transform: rotate(180deg); color: var(--secondary); }
+    .day-body { display: none; padding: 14px 16px 16px; border-top: 1px solid var(--border-subtle); font-size: 0.9rem; }
+    .day-card.open .day-body { display: block; }
+
+    .history-box {
+      background: var(--secondary-subtle);
+      border-left: 4px solid var(--secondary);
+      border-radius: 4px;
+      padding: 10px 12px;
+      font-size: 0.84rem;
+      margin-bottom: 12px;
+      line-height: 1.45;
+    }
+    .hotel-subcard {
+      background: var(--paper-muted);
+      border: 1px dashed var(--secondary);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      margin-bottom: 12px;
+    }
+    ul.clean-steps { list-style: none; margin: 10px 0; }
+    ul.clean-steps li { position: relative; padding-left: 18px; margin-bottom: 8px; font-size: 0.88rem; line-height: 1.5; }
+    ul.clean-steps li::before { content: "•"; position: absolute; left: 3px; color: var(--secondary); font-weight: 800; font-size: 1.1rem; }
+
+    .tip-card {
+      background: var(--accent-subtle);
+      border-left: 4px solid var(--accent);
+      border-radius: 4px;
+      padding: 10px 12px;
+      margin-top: 10px;
+      font-size: 0.84rem;
+    }
+
+    .action-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--paper-card);
+      border: 1px solid var(--border);
+      color: var(--ink);
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      text-decoration: none;
+      margin-top: 6px;
+      cursor: pointer;
+    }
+
+    /* MAPA LEAFLET */
+    #mapContainer {
+      height: 480px;
+      width: 100%;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 16px;
+    }
+
+    /* PROGRESO & CHECKLISTS */
+    .progress-wrap { background: var(--paper-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 14px 16px; margin-bottom: 16px; }
+    .progress-track { height: 9px; background: var(--paper-muted); border-radius: 999px; overflow: hidden; margin-top: 8px; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg, var(--secondary), var(--primary)); width: 0%; transition: width 0.35s ease; }
+    .check-box-group { background: var(--paper-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 15px 18px; margin-bottom: 14px; box-shadow: var(--shadow-sm); }
+    .check-box-group h3 { font-size: 0.98rem; font-weight: 700; margin-bottom: 12px; color: var(--secondary); display: flex; align-items: center; gap: 8px; }
+    .check-line { display: flex; align-items: flex-start; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--border-subtle); cursor: pointer; }
+    .check-line:last-child { border-bottom: none; }
+    .check-line input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--secondary); cursor: pointer; margin-top: 2px; }
+    .check-line.checked-done label { text-decoration: line-through; color: var(--muted); }
+
+    /* CONVERSOR & FRASES */
+    .fx-widget { background: var(--paper-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 16px; margin-bottom: 14px; box-shadow: var(--shadow-sm); }
+    .fx-row { display: flex; align-items: center; gap: 10px; }
+    .fx-col { flex: 1; }
+    .fx-col input { width: 100%; padding: 10px; font-family: var(--font-mono); font-size: 1rem; background: var(--paper-muted); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--ink); outline: none; }
+    .fx-quick-chips { display: flex; gap: 6px; overflow-x: auto; margin-top: 10px; scrollbar-width: none; }
+    .fx-chip { background: var(--paper-muted); border: 1px solid var(--border); font-size: 0.75rem; font-weight: 700; padding: 5px 10px; border-radius: 999px; cursor: pointer; white-space: nowrap; }
+
+    .flashcard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+    .flashcard { background: var(--paper-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 13px; cursor: pointer; box-shadow: var(--shadow-sm); }
+    .giant-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center; padding: 20px; }
+    .giant-modal.active { display: flex; }
+    .giant-card { background: #ffffff; color: #111; padding: 30px 22px; border-radius: 22px; text-align: center; width: 380px; max-width: 95%; }
+    .giant-local { font-size: 2.1rem; font-weight: 800; color: var(--primary); margin: 10px 0; font-family: var(--font-display); }
+    .giant-phonetic { font-family: var(--font-mono); font-size: 1rem; color: #555; }
+
+    /* Tarjeta de vuelos */
+    .flight-card { background: var(--paper-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 16px; margin-bottom: 16px; box-shadow: var(--shadow-sm); }
+    .flight-segment { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px dashed var(--border); }
+    .flight-segment:last-child { border-bottom: none; padding-bottom: 0; }
+    .flight-code { font-family: var(--font-mono); font-size: 0.82rem; font-weight: 700; color: var(--primary); }
+    .flight-route { font-size: 0.88rem; font-weight: 700; margin-left: 6px; }
+    .flight-time { font-size: 0.78rem; color: var(--muted); font-weight: 500; }
+
+    /* Fact Grid 2x2 */
+    .fact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+    .fact-card { background: var(--paper-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 13px 14px; box-shadow: var(--shadow-sm); }
+    .fact-card i { color: var(--secondary); margin-bottom: 6px; display: block; font-size: 1.1rem; }
+    .fact-card h5 { font-size: 0.86rem; font-weight: 800; margin-bottom: 3px; }
+    .fact-card p { font-size: 0.78rem; color: var(--muted); line-height: 1.4; }
+
+    /* Chip de sugerencia */
+    .suggestion-chip { background: var(--accent-subtle); color: var(--accent); font-size: 0.68rem; font-weight: 800; padding: 2px 7px; border-radius: 4px; text-transform: uppercase; margin-right: 6px; }
+
+    /* Curiosidades culturales */
+    .curiosity-card { background: var(--paper-card); border: 1px solid var(--border); border-left: 5px solid var(--primary); border-radius: var(--radius-sm); padding: 14px 16px; margin-bottom: 12px; box-shadow: var(--shadow-sm); }
+    .curiosity-card h5 { font-size: 0.92rem; font-weight: 800; margin-bottom: 5px; display: flex; align-items: center; gap: 8px; }
+    .curiosity-card p { font-size: 0.85rem; color: var(--muted); line-height: 1.5; }
+
+    /* QUIZ */
+    .quiz-card { background: var(--paper-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 16px; margin-bottom: 12px; box-shadow: var(--shadow-sm); }
+    .quiz-q { font-size: 0.95rem; font-weight: 700; margin-bottom: 10px; }
+    .quiz-opts { display: flex; flex-direction: column; gap: 8px; }
+    .quiz-btn { background: var(--paper-muted); border: 1px solid var(--border); color: var(--ink); padding: 10px 12px; border-radius: var(--radius-sm); font-size: 0.86rem; text-align: left; cursor: pointer; font-family: inherit; }
+    .quiz-btn.correct { background: var(--secondary-subtle); border-color: var(--secondary); color: var(--secondary); font-weight: 700; }
+    .quiz-btn.wrong { background: var(--primary-subtle); border-color: var(--primary); color: var(--primary); font-weight: 700; }
+    .quiz-exp { display: none; margin-top: 8px; font-size: 0.82rem; color: var(--muted); padding: 8px; background: var(--paper); border-radius: var(--radius-sm); }
+
+    /* BOTTOM DOCK */
+    .bottom-dock {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: color-mix(in srgb, var(--paper) 95%, transparent);
+      backdrop-filter: blur(16px);
+      border-top: 1px solid var(--border);
+      display: flex;
+      overflow-x: auto;
+      padding: 9px 6px max(9px, env(safe-area-inset-bottom));
+      z-index: 50;
+      scrollbar-width: none;
+    }
+    .bottom-dock::-webkit-scrollbar { display: none; }
+    .dock-tab-btn {
+      background: none; border: none; color: var(--muted);
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+      font-size: 0.72rem; font-weight: 700; cursor: pointer; padding: 8px 14px; flex: 0 0 auto; font-family: inherit;
+    }
+    .dock-tab-btn.active { color: var(--secondary); }
+  </style>
+</head>
+<body>
+
+  <!-- MODAL GIGANTE DE PANTALLA -->
+  <div class="giant-modal" id="giantModal" onclick="app.closeModal()">
+    <div class="giant-card" onclick="event.stopPropagation()">
+      <div style="font-size:0.75rem; font-weight:800; color:#888; text-transform:uppercase;" id="gModalCat">TRADUCCIÓN</div>
+      <div class="giant-local" id="gModalLocal">--</div>
+      <div class="giant-phonetic" id="gModalPhonetic">--</div>
+      <div style="font-size:1.05rem; font-weight:700; margin-top:10px;" id="gModalSpanish">--</div>
+      <button class="action-btn" style="margin-top:16px;" onclick="app.closeModal()"><i class="fa-solid fa-xmark"></i> Cerrar</button>
+    </div>
+  </div>
+
+  <!-- CABECERA -->
+  <header>
+    <div class="header-inner">
+      <div class="brand-top-row">
+        <img src="/logo-header.svg" alt="ChesTrips" class="header-brand-img">
+      </div>
+      <div class="trip-title-row" id="hTitle">--</div>
+      <div class="trip-meta-row">
+        <div class="brand-dates" id="hDates">--</div>
+        <button class="share-btn" onclick="app.shareTrip()" title="Compartir guía">
+          <i class="fa-solid fa-arrow-up-from-bracket"></i> <span id="shareText">Compartir enlace</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- BUSCADOR -->
+  <div class="top-controls">
+    <div class="search-box">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="search" id="globalSearch" placeholder="Buscar paradas, platos, templos, hoteles..." oninput="app.search(this.value)">
+    </div>
+  </div>
+
+  <main>
+    <!-- TAB 1: RESUMEN -->
+    <section id="tab-resumen" class="tab-view active">
+      <div class="stat-grid" id="statGrid"></div>
+      <div class="route-thread" id="routeThread"></div>
+      
+      <div class="check-box-group" id="weatherContainer" style="margin-bottom:14px;">
+        <h3><i class="fa-solid fa-cloud-sun"></i> Clima & Estacionalidad</h3>
+        <div id="weatherList" style="font-size:0.86rem; color:var(--muted);"></div>
+      </div>
+      <div id="flightsContainer"></div>
+      <div class="fact-grid" id="quickFactsGrid"></div>
+      <div class="check-box-group">
+        <h3><i class="fa-solid fa-ticket"></i> Transportes & Logística Clave</h3>
+        <div id="transportsList"></div>
+      </div>
+    </section>
+
+    <!-- TAB 2: ITINERARIO -->
+    <section id="tab-itinerario" class="tab-view">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <span style="font-size:0.8rem; font-weight:800; color:var(--muted); text-transform:uppercase;">Ruta Día a Día</span>
+        <button class="action-btn" onclick="app.toggleAllDays()">Expandir / Plegar todo</button>
+      </div>
+      <div id="itineraryContainer"></div>
+    </section>
+
+    <!-- TAB 3: MAPA INTERACTIVO -->
+    <section id="tab-mapa" class="tab-view">
+      <div style="margin-bottom:12px;">
+        <h2 style="font-size:1.35rem; font-weight:700;">Ruta Georreferenciada</h2>
+        <p style="font-size:0.85rem; color:var(--muted);">Trazado de paradas con polilínea de conexión en vivo.</p>
+      </div>
+      <div id="mapContainer"></div>
+    </section>
+
+    <!-- TAB 4: GOURMET -->
+    <section id="tab-gourmet" class="tab-view">
+      <div class="progress-wrap">
+        <div style="display:flex; justify-content:space-between; font-size:0.84rem; font-weight:700;">
+          <span>Pasaporte Culinario</span>
+          <span id="gourmetLabel">0 / 0 (0%)</span>
+        </div>
+        <div class="progress-track"><div class="progress-fill" id="gourmetBar"></div></div>
+      </div>
+      <div class="check-box-group">
+        <h3><i class="fa-solid fa-utensils"></i> Especialidades que no te puedes perder</h3>
+        <div id="gourmetList"></div>
+      </div>
+    </section>
+
+    <!-- TAB 5: ETIQUETA & CULTURA -->
+    <section id="tab-etiqueta" class="tab-view">
+      <div style="margin-bottom:14px;">
+        <h2 style="font-size:1.35rem; font-weight:700;">Curiosidades & Costumbres</h2>
+        <p style="font-size:0.85rem; color:var(--muted);">Secretos históricos, leyendas y normas de protocolo.</p>
+      </div>
+      <div id="curiositiesList"></div>
+      <div style="margin-top:20px; margin-bottom:12px;">
+        <h3 style="font-size:1.1rem; font-weight:700;">Protocolo & Etiqueta Diaria</h3>
+      </div>
+      <div id="etiquetteList"></div>
+    </section>
+
+    <!-- TAB 6: HERRAMIENTAS & IDIOMA -->
+    <section id="tab-herramientas" class="tab-view">
+      <div class="fx-widget">
+        <h4 style="font-size:0.9rem; font-weight:700; margin-bottom:8px;"><i class="fa-solid fa-money-bill-transfer"></i> Conversor de Divisa</h4>
+        <div class="fx-row">
+          <div class="fx-col"><label style="font-size:0.75rem; font-weight:800; color:var(--muted);" id="fxLabelLocal">LOCAL</label><input type="number" id="fxLocal" oninput="app.calcFxLocal()"></div>
+          <i class="fa-solid fa-arrow-right-arrow-left" style="color:var(--muted); font-size:0.8rem; margin-top:14px;"></i>
+          <div class="fx-col"><label style="font-size:0.75rem; font-weight:800; color:var(--muted);">EUR (€)</label><input type="number" id="fxEur" oninput="app.calcFxEur()"></div>
+        </div>
+        <div class="fx-quick-chips" id="fxChips"></div>
+      </div>
+
+      <div style="font-size:0.8rem; font-weight:800; color:var(--muted); text-transform:uppercase; margin-bottom:6px;">Toca una tarjeta para verla en grande</div>
+      <div class="flashcard-grid" id="fcGrid"></div>
+    </section>
+
+    <!-- TAB 7: QUIZ CULTURAL -->
+    <section id="tab-quiz" class="tab-view">
+      <div class="stat-card" style="margin-bottom:14px; text-align:left; padding:12px 16px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-weight:800; font-size:0.9rem;">Puntuación del Quiz:</span>
+          <span class="stat-num" id="quizScoreText" style="font-size:1.2rem;">0 / 0</span>
+        </div>
+      </div>
+      <div id="quizContainer"></div>
+    </section>
+
+    <!-- TAB 8: MALETA -->
+    <section id="tab-maleta" class="tab-view">
+      <div class="progress-wrap">
+        <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.84rem; font-weight:700;">
+          <span>Equipaje listo</span>
+          <span id="luggageLabel">0 / 0 (0%)</span>
+        </div>
+        <div class="progress-track"><div class="progress-fill" id="luggageBar"></div></div>
+      </div>
+
+      <!-- Barra de acciones rápidas: añadir y resetear -->
+      <div style="display:flex; gap:8px; margin-bottom:14px;">
+        <input type="text" id="newLuggageInput" placeholder="Añadir ítem personal..." 
+               style="flex:1; padding:9px 12px; font-size:0.85rem; border:1px solid var(--border); border-radius:var(--radius-sm); background:var(--paper-card); color:var(--ink); outline:none;"
+               onkeydown="if(event.key==='Enter') app.addCustomLuggage()">
+        <button class="action-btn" onclick="app.addCustomLuggage()"><i class="fa-solid fa-plus"></i></button>
+        <button class="action-btn" onclick="app.resetPacking()" title="Desmarcar todo"><i class="fa-solid fa-arrow-rotate-left"></i></button>
+      </div>
+
+      <div id="packingList"></div>
+    </section>
+
+    <!-- TAB 9: SOS & NOTAS -->
+    <section id="tab-sos" class="tab-view">
+      <div style="background:var(--primary-subtle); border:1px solid var(--primary); border-radius:var(--radius-md); padding:16px; margin-bottom:14px;">
+        <h3 style="color:var(--primary); font-size:1rem; font-weight:700; margin-bottom:6px;"><i class="fa-solid fa-shield-halved"></i> Asistencia Consular</h3>
+        <p style="font-size:0.86rem;" id="sosEmbassy">--</p>
+      </div>
+
+      <div class="stat-card" style="text-align:left; padding:16px; margin-bottom:14px;">
+        <h4 style="font-size:0.92rem; font-weight:700; margin-bottom:8px;"><i class="fa-solid fa-phone"></i> Teléfonos de Emergencia</h4>
+        <div id="sosPhones" style="font-size:0.86rem;"></div>
+      </div>
+
+      <div class="stat-card" style="text-align:left; padding:16px;">
+        <h4 style="font-size:0.92rem; font-weight:700; margin-bottom:6px;"><i class="fa-solid fa-note-sticky"></i> Bloc de Notas Offline</h4>
+        <textarea id="localNotes" style="width:100%; min-height:100px; border:1px solid var(--border); border-radius:var(--radius-sm); background:var(--paper-muted); color:var(--ink); padding:8px; font-family:inherit; font-size:0.85rem;" placeholder="Pólizas, reservas o apuntes..." oninput="app.saveNotes()"></textarea>
+      </div>
+    </section>
+  </main>
+
+  <!-- BARRA DE NAVEGACIÓN INFERIOR -->
+  <nav class="bottom-dock">
+    <button class="dock-tab-btn active" onclick="app.tab('resumen', this)"><i class="fa-solid fa-compass"></i><span>Resumen</span></button>
+    <button class="dock-tab-btn" onclick="app.tab('itinerario', this)"><i class="fa-solid fa-calendar-days"></i><span>Ruta</span></button>
+    <button class="dock-tab-btn" onclick="app.tab('mapa', this)"><i class="fa-solid fa-map-location-dot"></i><span>Mapa</span></button>
+    <button class="dock-tab-btn" onclick="app.tab('gourmet', this)"><i class="fa-solid fa-bowl-rice"></i><span>Gourmet</span></button>
+    <button class="dock-tab-btn" onclick="app.tab('etiqueta', this)"><i class="fa-solid fa-handshake"></i><span>Etiqueta</span></button>
+    <button class="dock-tab-btn" onclick="app.tab('herramientas', this)"><i class="fa-solid fa-toolbox"></i><span>Tarjetas</span></button>
+    <button class="dock-tab-btn" onclick="app.tab('quiz', this)"><i class="fa-solid fa-circle-question"></i><span>Quiz</span></button>
+    <button class="dock-tab-btn" onclick="app.tab('maleta', this)"><i class="fa-solid fa-list-check"></i><span>Maleta</span></button>
+    <button class="dock-tab-btn" onclick="app.tab('sos', this)"><i class="fa-solid fa-kit-medical"></i><span>SOS</span></button>
+  </nav>
+
+  <script>
+    window.__TRIP_DATA__ = {
+  "tripTitle": "Brumas Atlánticas: Esplendor y Leyenda en A Coruña",
+  "dates": "01 Nov – 05 Nov · 5 días",
+  "startDateISO": "2024-11-01",
+  "badgeText": "España · 5 Días · Costa Atlántica",
+  "stats": {
+    "days": 5,
+    "cities": 1,
+    "hotels": 1,
+    "flights": 0
+  },
+  "flights": [],
+  "quickFacts": [
+    {
+      "icon": "fa-train",
+      "title": "Transporte Clave",
+      "desc": "A Coruña es una ciudad muy caminable. Para trayectos urbanos o hacia los búnkeres de San Pedro, el bus urbano (Tranvías Coruña) acepta pago contactless o tarjeta Millennium."
+    },
+    {
+      "icon": "fa-credit-card",
+      "title": "Pagos & Dinero",
+      "desc": "El euro es la moneda oficial. Las tarjetas de crédito y pagos móviles (Apple Pay / Google Pay) son aceptados de forma universal, incluso para importes mínimos."
+    },
+    {
+      "icon": "fa-plug",
+      "title": "Enchufes & Red",
+      "desc": "Enchufes tipo C y F (estándar europeo de 230V). Cobertura 5G excelente y red nacional plenamente integrada."
+    },
+    {
+      "icon": "fa-trash-can",
+      "title": "Costumbre Urbana",
+      "desc": "La ciudad destaca por su limpieza y sus galerías acristaladas orientadas al puerto, apodada la 'Ciudad de Cristal'."
+    }
+  ],
+  "currency": {
+    "code": "EUR",
+    "symbol": "€",
+    "rateToEUR": 1.0,
+    "quickChips": [
+      5,
+      10,
+      20,
+      50,
+      100
+    ]
+  },
+  "routeThread": [
+    {
+      "name": "A Coruña",
+      "icon": "fa-water",
+      "query": "a coruna"
+    }
+  ],
+  "weatherTable": [
+    {
+      "region": "Galicia Costera",
+      "temp": "11–16°C",
+      "desc": "Clima atlántico fresco, posibilidad de chubascos y cielos cambiantes."
+    }
+  ],
+  "mapCenter": [
+    43.3623,
+    -8.4115
+  ],
+  "mapZoom": 13,
+  "days": [
+    {
+      "day": 1,
+      "dateBadge": "01 NOV",
+      "title": "Llegada y Paseo por la Ciudad de Cristal",
+      "isSuggestion": false,
+      "meta": "A Coruña · Centro Histórico · Galerías",
+      "lat": 43.3682,
+      "lng": -8.396,
+      "hotel": "Hotel Riazor o similar",
+      "hotelAddress": "Rúa Andrés Gaos, 0, 15004 A Coruña",
+      "hotelMapsUrl": "https://maps.google.com/?q=Hotel+Riazor+A+Coruna",
+      "historyContext": "A Coruña fue puerto romano (Brigantium) y punto clave de salida de la Armada Invencible en 1588. Las famosas galerías acristaladas nacieron en el siglo XIX para proteger las fachadas de los embates del mar y aprovechar al máximo la luz solar.",
+      "steps": [
+        "Llegada e instalación en el alojamiento.",
+        "Paseo vespertino por la Marina contemplando las emblemáticas galerías blancas.",
+        "Cenar unas tapas de pulpo a feira en la mítica Calle Real o zona de la Pescadería."
+      ],
+      "cultureTip": "Saluda siempre con un cordial 'Bos días' o 'Boa tarde' al entrar en comercios locales; el gallego es una lengua muy viva y apreciada.",
+      "practicalTip": "Lleva siempre calzado cómodo y una chaqueta impermeable ligera; el clima atlántico puede mudar en cuestión de minutos."
+    },
+    {
+      "day": 2,
+      "dateBadge": "02 NOV",
+      "title": "La Torre de Hércules y los Vientos del Norte",
+      "isSuggestion": true,
+      "meta": "Torre de Hércules · Escultura · Costa",
+      "lat": 43.3857,
+      "lng": -8.4065,
+      "hotel": "Hotel Riazor o similar",
+      "hotelAddress": "Rúa Andrés Gaos, 0, 15004 A Coruña",
+      "hotelMapsUrl": "https://maps.google.com/?q=Hotel+Riazor+A+Coruna",
+      "historyContext": "La Torre de Hércules es el faro romano en funcionamiento más antiguo del mundo y el único de la época grecorromana conservado casi íntegramente. Según la mitología, Hércules enterró aquí la cabeza del gigante Gerión tras vencerlo en combate singular.",
+      "steps": [
+        "Mañana: Recorrido por el Parque Escultórico de la Torre de Hércules.",
+        "Ascenso a la torre para contemplar las vistas panorámicas del Océano Atlántico.",
+        "Tarde: Visita al Aquarium Finisterrae (Casa de los Peces) y paseo por el Paseo Marítimo, uno de los más largos de Europa."
+      ],
+      "cultureTip": "Los vientos en la Torre de Hércules pueden soplar con fuerza inusitada; mantente alejado de los acantilados más escarpados en días de temporal.",
+      "practicalTip": "Reserva la entrada a la Torre de Hércules con antelación si deseas subir al interior, ya que el aforo diario está estrictamente limitado."
+    },
+    {
+      "day": 3,
+      "dateBadge": "03 NOV",
+      "title": "Plaza de María Pita y Raíces de la Ciudad Vieja",
+      "isSuggestion": true,
+      "meta": "Ciudad Vieja · Historia · María Pita",
+      "lat": 43.3692,
+      "lng": -8.3995,
+      "hotel": "Hotel Riazor o similar",
+      "hotelAddress": "Rúa Andrés Gaos, 0, 15004 A Coruña",
+      "hotelMapsUrl": "https://maps.google.com/?q=Hotel+Riazor+A+Coruna",
+      "historyContext": "María Pita se convirtió en heroína local en 1589 al liderar la defensa de la ciudad contra el corsario inglés Francis Drake, arengando a los coruñeses tras matar alalférez inglés y arrebatándole la bandera enemiga.",
+      "steps": [
+        "Mañana: Visita a la imponente Plaza de María Pita y su Palacio Municipal.",
+        "Inmersión en la Ciudad Vieja: Iglesia de Santiago (la más antigua), Convento de Santo Domingo y Jardín de San Carlos.",
+        "Tarde: Visita a la Casa-Museo de Emilia Pardo Bazán o al Museo de Bellas Artes."
+      ],
+      "cultureTip": "En el Jardín de San Carlos descansa el general británico Sir John Moore, muerto en la Batalla de Elviña (1809) defendiendo la retirada de sus tropas frente al ejército de Napoleón.",
+      "practicalTip": "La Ciudad Vieja es un entramado peatonal perfecto para recorrer sin prisa, lleno de rincones empedrados y casonas señoriales."
+    },
+    {
+      "day": 4,
+      "dateBadge": "04 NOV",
+      "title": "Panorámicas desde el Monte de San Pedro y Oza",
+      "isSuggestion": true,
+      "meta": "Monte de San Pedro · Búnkeres · Ascensor",
+      "lat": 43.3695,
+      "lng": -8.4348,
+      "hotel": "Hotel Riazor o similar",
+      "hotelAddress": "Rúa Andrés Gaos, 0, 15004 A Coruña",
+      "hotelMapsUrl": "https://maps.google.com/?q=Hotel+Riazor+A+Coruna",
+      "historyContext": "El Monte de San Pedro fue un enclave militar estratégico defensivo durante el siglo XX, albergando enormes cañones de costa Vickers que vigilaban la entrada de la ría.",
+      "steps": [
+        "Mañana: Subida al Monte de San Pedro mediante el singular ascensor esférico de cristal o a pie.",
+        "Exploración de los antiguos cañones antiaéreos, los búnkeres restaurados y el Parque de los Niños.",
+        "Tarde: Degustación de marisco fresco local en el barrio de pescadores de los Castros o zona de Orzán."
+      ],
+      "cultureTip": "Desde los miradores del monte se obtienen las mejores puestas de sol sobre el Océano Atlántico y el Golfo Ártabro.",
+      "practicalTip": "El ascensor esférico ofrece una experiencia visual excelente por un coste muy económico; comprueba los horarios según la temporada."
+    },
+    {
+      "day": 5,
+      "dateBadge": "05 NOV",
+      "title": "Mercado de Plaza de Lugo y Despedida Atlántica",
+      "isSuggestion": true,
+      "meta": "Gastronomía · Mercado · Despedida",
+      "lat": 43.3671,
+      "lng": -8.4024,
+      "hotel": "Hotel Riazor o similar",
+      "hotelAddress": "Rúa Andrés Gaos, 0, 15004 A Coruña",
+      "hotelMapsUrl": "https://maps.google.com/?q=Hotel+Riazor+A+Coruna",
+      "historyContext": "Los mercados de abastos en Galicia son auténticos templos sociales donde se valora el producto fresco de ría por encima de todo, reflejando la cultura marinera de la costa gallega.",
+      "steps": [
+        "Mañana: Visita al Mercado de la Plaza de Lugo, uno de los mejores mercados de mariscos y pescados de España.",
+        "Últimas compras de productos típicos (queso de tetilla, tarta de Santiago o lacón) y paseo por la playa de Riazor.",
+        "Tarde: Fin de viaje y regreso al punto de origen."
+      ],
+      "cultureTip": "Si compras marisco fresco en el mercado, muchos puestos ofrecen servicio de cocción al momento para que puedas llevarlo listo para consumir.",
+      "practicalTip": "Lleva una bolsa térmica o ligera si planeas comprar quesos o dulces locales para el viaje de vuelta."
+    }
+  ],
+  "curiosities": [
+    {
+      "title": "La Ciudad de Cristal",
+      "icon": "fa-sun",
+      "desc": "Las fachadas galeradas de la Marina no solo embellecen el puerto, sino que actúan como invernaderos naturales que capturan el calor del sol y protegen del viento atlántico."
+    },
+    {
+      "title": "El faro romano vivo",
+      "icon": "fa-lightbulb",
+      "desc": "La Torre de Hércules lleva guiando a los navegantes desde finales del siglo I d.C., siendo restaurada en el siglo XVIII bajo el reinado de Carlos III con su actual aspecto neoclásico."
+    },
+    {
+      "title": "Héroes de la Batalla de Elviña",
+      "icon": "fa-shield-halved",
+      "desc": "La memoria de la guerra de la Independencia sigue muy presente; la figura de Sir John Moore simboliza el respeto militar entre británicos y españoles en plena contienda napoleónica."
+    },
+    {
+      "title": "El origen de las Rías Altas",
+      "icon": "fa-water",
+      "desc": "La costa coruñesa está marcada por una geología de rías abruptas, acantilados graníticos y una bravura marina que ha forjado el carácter resiliente de sus gentes."
+    },
+    {
+      "title": "Cuna de la Moda Global",
+      "icon": "fa-shirt",
+      "desc": "A Coruña es el epicentro mundial de Inditex (Zara), una revolución comercial global que nació en un modesto taller textil local en el municipio vecino de Arteixo."
+    }
+  ],
+  "etiquette": [
+    {
+      "title": "Trato Cercano y Respetuoso",
+      "icon": "fa-handshake",
+      "desc": "En Galicia el trato es amable y directo. Un saludo cordial abre todas las puertas en establecimientos y tabernas tradicionales."
+    },
+    {
+      "title": "Respeto por el Entorno Natural",
+      "icon": "fa-leaf",
+      "desc": "Las playas urbanas y los espacios protegidos como el entorno de la Torre de Hércules se cuidan con esmero; no dejar rastro de basura es norma cívica fundamental."
+    },
+    {
+      "title": "Puntualidad Relativa y Disfrute",
+      "icon": "fa-clock",
+      "desc": "El ritmo social invita a la calma y a la sobremesa pausada. Las prisas no encajan con la filosofía local del buen comer y el buen conversar."
+    },
+    {
+      "title": "Uso de las Lenguas Cooficiales",
+      "icon": "fa-language",
+      "desc": "El gallego y el castellano conviven con absoluta naturalidad. Utilizar expresiones sencillas en gallego siempre es recibido con una sonrisa."
+    }
+  ],
+  "transports": [],
+  "gourmet": [
+    {
+      "dish": "Pulpo a la Gallega (Polbo á feira)",
+      "desc": "Pulpo cocido en cazuela de cobre, cortado en rodajas, aderezado con pimentón dulce o picante, sal gruesa y aceite de oliva virgen extra.",
+      "city": "A Coruña",
+      "recommendedSpot": "Pulpeira de Melide"
+    },
+    {
+      "dish": "Caldeirada de Pescado",
+      "desc": "Guiso marinero tradicional elaborado con pescado fresco de la ría (mero, rape o lubina), patatas, cebolla, ajo, pimentón y un excelente refrito.",
+      "city": "A Coruña",
+      "recommendedSpot": "Taberna Da Galera"
+    },
+    {
+      "dish": "Empanada Gallega",
+      "desc": "Masa crujiente de harina de trigo o maíz rellena tradicionalmente de zamburiñas, atún, bacalao con pasas o carne.",
+      "city": "A Coruña",
+      "recommendedSpot": "Panadería Galega"
+    },
+    {
+      "dish": "Lacón con Grelos",
+      "desc": "Plato de invierno por excelencia a base de paleta de cerdo cocida, patatas, chorizo y los característicos brotes tiernos y amargos del nabo (grelos).",
+      "city": "A Coruña",
+      "recommendedSpot": "Mesón do Pulpo"
+    },
+    {
+      "dish": "Pimientos de Padrón",
+      "desc": "Pequeños pimientos verdes fritos en aceite de oliva y espolvoreados con sal gorda ('Os uns cantan e os outros pican').",
+      "city": "A Coruña",
+      "recommendedSpot": "Bodegón Cervecería Estrella Galicia"
+    },
+    {
+      "dish": "Tarta de Santiago",
+      "desc": "Bizcocho plano y jugoso elaborado con almendra molida, azúcar, huevos y decorado en la superficie con la silueta de la Cruz de Santiago en azúcar glas.",
+      "city": "A Coruña",
+      "recommendedSpot": "Confitería Glaseé"
+    },
+    {
+      "dish": "Queimada",
+      "desc": "Bebida alcohólica tradicional gallega a base de aguardiente de orujo, azúcar, granos de café, piel de limón y naranja, flambeada mientras se recura el conjuro contra los malos espíritus.",
+      "city": "A Coruña",
+      "recommendedSpot": "Pubs tradicionales de la Ciudad Vieja"
+    },
+    {
+      "dish": "Zamburiñas a la Plancha",
+      "desc": "Moluscos bivalvos autóctonos cocinados brevemente a la plancha con un chorrito de aceite, ajo y perejil fresco.",
+      "city": "A Coruña",
+      "recommendedSpot": "O Samos"
+    },
+    {
+      "dish": "Caldo Gallego",
+      "desc": "Sopa reconfortante elaborada con grelos o berzas, patatas, alubias blancas y unto (grasa de cerdo curada).",
+      "city": "A Coruña",
+      "recommendedSpot": "Casa Saavedra"
+    },
+    {
+      "dish": "Vino Albariño D.O. Rías Baixas",
+      "desc": "Vino blanco monovarietal fresco, aromático y con acidez equilibrada, maridaje perfecto para cualquier producto del mar atlántico.",
+      "city": "A Coruña",
+      "recommendedSpot": "Vinoteca de la Marina"
+    }
+  ],
+  "flashcards": [
+    {
+      "category": "Restaurante",
+      "local": "Bos días / Boa tarde",
+      "phonetic": "Bohs dee-ahs / Boh-ah tar-deh",
+      "spanish": "Buenos días / Buenas tardes"
+    },
+    {
+      "category": "Restaurante",
+      "local": "A conta, por favor",
+      "phonetic": "Ah kohn-tah, por fah-vor",
+      "spanish": "La cuenta, por favor"
+    },
+    {
+      "category": "Restaurante",
+      "local": "Unha caña, por favor",
+      "phonetic": "Oon-hah kah-nyah, por fah-vor",
+      "spanish": "Una caña de cerveza, por favor"
+    },
+    {
+      "category": "Cortesía",
+      "local": "Grazas / Moitas grazas",
+      "phonetic": "Grah-thahs / Moy-tahs grah-thahs",
+      "spanish": "Gracias / Muchas gracias"
+    },
+    {
+      "category": "Urgencias",
+      "local": "Onde está o baño?",
+      "phonetic": "Ohn-deh ehs-tah oh bah-nyoh?",
+      "spanish": "¿Dónde está el baño?"
+    },
+    {
+      "category": "Urgencias",
+      "local": "Preciso axuda, por favor",
+      "phonetic": "Pre-thee-soh ah-zhoo-dah, por fah-vor",
+      "spanish": "Necesito ayuda, por favor"
+    },
+    {
+      "category": "Indicaciones",
+      "local": "Onde está o faro?",
+      "phonetic": "Ohn-deh ehs-tah oh fah-roh?",
+      "spanish": "¿Dónde está el faro?"
+    },
+    {
+      "category": "Despedida",
+      "local": "Ata logo",
+      "phonetic": "Ah-tah loh-goh",
+      "spanish": "Hasta luego"
+    },
+    {
+      "category": "Restaurante",
+      "local": "Unha ración de pulpo",
+      "phonetic": "Oon-hah rah-thyohn deh pool-poh",
+      "spanish": "Una ración de pulpo"
+    },
+    {
+      "category": "Comercio",
+      "local": "Canto custa isto?",
+      "phonetic": "Kahn-toh koos-tah ees-toh?",
+      "spanish": "¿Cuánto cuesta esto?"
+    },
+    {
+      "category": "Cortesía",
+      "local": "Por favor",
+      "phonetic": "Por fah-vor",
+      "spanish": "Por favor"
+    },
+    {
+      "category": "Urgencias",
+      "local": "Chama a unha ambulancia",
+      "phonetic": "Chah-mah ah oon-hah ahm-boo-lahn-thyah",
+      "spanish": "Llama a una ambulancia"
+    }
+  ],
+  "quiz": [
+    {
+      "question": "¿Cuál es la característica principal de la Torre de Hércules que la hace única en el mundo?",
+      "options": [
+        "Es el faro romano en funcionamiento más antiguo del mundo",
+        "Está construida enteramente de mármol blanco de Carrara",
+        "Es el faro más alto jamás construido"
+      ],
+      "correct": 0,
+      "explanation": "La Torre de Hércules es el único faro de origen romano que continúa operativo y guiando a los marinos tras casi dos milenios."
+    },
+    {
+      "question": "¿Quién fue María Pita y por qué es la heroína de A Coruña?",
+      "options": [
+        "Una reina medieval que fundó la Ciudad Vieja",
+        "Lideró la defensa de la ciudad contra el ataque del corsario inglés Francis Drake en 1589",
+        "Fue la primera mujer capitana de la Armada Española"
+      ],
+      "correct": 1,
+      "explanation": "María Pita alentó a la resistencia coruñesa frente a las tropas inglesas de Drake, convirtiéndose en un símbolo eterno de valor."
+    },
+    {
+      "question": "¿Por qué se diseñaron las famosas galerías acristaladas de la Marina?",
+      "options": [
+        "Para imitar la arquitectura de los palacios venecianos",
+        "Para proteger las fachadas de los temporales atlánticos y aprovechar la luz solar como invernadero",
+        "Para ocultar los comercios del puerto en el siglo XVIII"
+      ],
+      "correct": 1,
+      "explanation": "Las galerías nacieron inspiradas en las cristaleras de los popes de los grandes navíos de guerra, adaptadas a las viviendas para resistir el clima atlántico."
+    },
+    {
+      "question": "¿Qué importante militar británico descansa en el Jardín de San Carlos?",
+      "options": [
+        "Lord Nelson",
+        "El Duque de Wellington",
+        "Sir John Moore"
+      ],
+      "correct": 2,
+      "explanation": "Sir John Moore falleció heroicamente en 1809 durante la Batalla de Elviña, cubriendo la retirada de sus tropas frente al ejército francés."
+    },
+    {
+      "question": "¿Cuál es el origen mitológico fundacional atribuido a la Torre de Hércules?",
+      "options": [
+        "Hércules enterró allí la cabeza del gigante Gerión tras derrotarlo",
+        "Fue construida por los argonautas en busca del vellocino de oro",
+        "Un regalo de los dioses del Olimpo a los celtas ártabros"
+      ],
+      "correct": 0,
+      "explanation": "La leyenda fundacional narra que el héroe mitológico Hércules venció al gigante Gerión y erigió el faro sobre su tumba."
+    }
+  ],
+  "packing": [
+    {
+      "cat": "Documentación & Dinero",
+      "item": "DNI o Pasaporte en vigor, tarjetas bancarias contactless y algo de efectivo para pequeños comercios."
+    },
+    {
+      "cat": "Ropa & Esenciales",
+      "item": "Chubasquero transpirable o cortavientos, paraguas compacto y calzado cómodo e impermeable."
+    },
+    {
+      "cat": "Electrónica & Logística",
+      "item": "Cargador de móvil, powerbank compacta de 10.000 mAh y adaptador europeo estándar (si procede)."
+    },
+    {
+      "cat": "Salud & Botiquín",
+      "item": "Medicación personal habitual, tiritas para ampollas y protector labial."
+    }
+  ],
+  "emergency": {
+    "police": "091 / 112",
+    "ambulance": "061 / 112",
+    "embassy": "No aplicable (Destino nacional en España - Emergencias generales 112)",
+    "hospital": "Complejo Hospitalario Universitario A Coruña (CHUAC) - Urgencias 24h"
+  }
+};
+
+    const app = {
+      map: null,
+      allExpanded: false,
+      quizScore: 0,
+      quizAnswered: {},
+
+      init() {
+        const d = window.__TRIP_DATA__;
+        if (!d) return;
+
+        const hTitle = document.getElementById('hTitle');
+        if (hTitle) hTitle.textContent = d.tripTitle || 'ChesTrips';
+
+        const hDates = document.getElementById('hDates');
+        if (hDates) hDates.textContent = d.dates || '';
+
+        this.renderStats(d.stats);
+        this.renderFlights(d.flights);
+        this.renderQuickFacts(d.quickFacts);
+        this.renderThread(d.routeThread);
+        this.renderWeather(d.weatherTable);
+        this.renderTransports(d.transports);
+        this.renderItinerary(d.days);
+        this.initCurrency(d.currency);
+        this.renderGourmet(d.gourmet);
+        this.renderCuriosities(d.curiosities);
+        this.renderEtiquette(d.etiquette);
+        this.renderFlashcards(d.flashcards);
+        this.renderQuiz(d.quiz);
+        this.renderPacking(d.packing);
+        this.renderSOS(d.emergency);
+
+        const notesEl = document.getElementById('localNotes');
+        if (notesEl) {
+          const savedNotes = localStorage.getItem('ches_notes_' + (d.tripTitle || 'v'));
+          if (savedNotes) notesEl.value = savedNotes;
+        }
+
+        this.loadChecklistStates();
+      },
+
+      async shareTrip() {
+        const url = window.location.href;
+        const title = window.__TRIP_DATA__?.tripTitle || 'Guía de viaje';
+        const textEl = document.getElementById('shareText');
+
+        const showCopiedFeedback = () => {
+          if (!textEl) return;
+          const prev = textEl.textContent;
+          textEl.textContent = '¡Enlace copiado!';
+          setTimeout(() => { textEl.textContent = prev; }, 2500);
+        };
+
+        // 1. Intentar el menú nativo del sistema operativo (móvil)
+        if (navigator.share) {
+          try {
+            await navigator.share({
+              title: title,
+              text: 'Guía de viaje: ' + title,
+              url: url
+            });
+            return;
+          } catch (e) {
+            if (e.name === 'AbortError') return;
+          }
+        }
+
+        // 2. Fallback con Clipboard API moderno
+        if (navigator.clipboard && window.isSecureContext) {
+          try {
+            await navigator.clipboard.writeText(url);
+            showCopiedFeedback();
+            return;
+          } catch (_) {}
+        }
+
+        // 3. Fallback infalible de portapapeles
+        try {
+          const tempInput = document.createElement('input');
+          tempInput.value = url;
+          tempInput.style.position = 'fixed';
+          tempInput.style.opacity = '0';
+          document.body.appendChild(tempInput);
+          tempInput.focus();
+          tempInput.select();
+          const ok = document.execCommand('copy');
+          document.body.removeChild(tempInput);
+          if (ok) {
+            showCopiedFeedback();
+            return;
+          }
+        } catch (_) {}
+
+        // 4. Último recurso
+        prompt("Copia el enlace de tu guía:", url);
+      },
+
+      tab(tabId, btn) {
+        document.querySelectorAll('.tab-view').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.dock-tab-btn').forEach(b => b.classList.remove('active'));
+        const target = document.getElementById('tab-' + tabId);
+        if (target) target.classList.add('active');
+        if (btn) {
+          btn.classList.add('active');
+          btn.scrollIntoView({ behavior: 'smooth', inline: 'center' });
+        }
+        if (tabId === 'mapa') {
+          setTimeout(() => this.initMap(), 200);
+        }
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      },
+
+      renderStats(s) {
+        const c = document.getElementById('statGrid');
+        if (!c || !s) return;
+        c.innerHTML = `
+          <div class="stat-card"><div class="stat-num">${s.days || '--'}</div><div class="stat-lbl">Días</div></div>
+          <div class="stat-card"><div class="stat-num">${s.cities || '--'}</div><div class="stat-lbl">Zonas</div></div>
+          <div class="stat-card"><div class="stat-num">${s.hotels || '--'}</div><div class="stat-lbl">Hoteles</div></div>
+          <div class="stat-card"><div class="stat-num">${s.flights || '--'}</div><div class="stat-lbl">Vuelos</div></div>
+        `;
+      },
+
+      renderFlights(fl) {
+        const c = document.getElementById('flightsContainer');
+        if (!c) return;
+        if (!fl || !fl.length) { c.style.display = 'none'; return; }
+        c.style.display = 'block';
+        c.innerHTML = `
+          <div class="flight-card">
+            <h4 style="font-size:0.9rem; font-weight:800; margin-bottom:10px; color:var(--primary);">
+              <i class="fa-solid fa-plane"></i> Vuelos Reservados ${fl[0]?.locator ? '<span style="font-family:var(--font-mono); font-size:0.8rem; font-weight:700; color:var(--muted); margin-left:6px;">(Ref: ' + fl[0].locator + ')</span>' : ''}
+            </h4>
+            ${fl.map(f => `
+              <div class="flight-segment">
+                <div>
+                  <span class="flight-code">${f.code || 'Vuelo'}</span>
+                  <span class="flight-route">${f.route || ''}</span>
+                </div>
+                <div class="flight-time">${f.time || ''}</div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      },
+
+      renderQuickFacts(qf) {
+        const c = document.getElementById('quickFactsGrid');
+        if (!c) return;
+        if (!qf || !qf.length) { c.style.display = 'none'; return; }
+        c.style.display = 'grid';
+        c.innerHTML = qf.map(f => `
+          <div class="fact-card">
+            <i class="fa-solid ${f.icon || 'fa-circle-info'}"></i>
+            <h5>${f.title}</h5>
+            <p>${f.desc}</p>
+          </div>
+        `).join('');
+      },
+
+      renderThread(th) {
+        const c = document.getElementById('routeThread');
+        if (!c || !th) return;
+        c.innerHTML = th.map(node => `
+          <div class="thread-stop" onclick="app.filterByThread('${node.query || node.name}')">
+            <i class="fa-solid ${node.icon || 'fa-location-dot'}"></i>
+            <span>${node.name}</span>
+          </div>
+        `).join('');
+      },
+
+      filterByThread(q) {
+        this.tab('itinerario');
+        const s = document.getElementById('globalSearch');
+        if (s) { s.value = q; this.search(q); }
+      },
+
+      renderWeather(w) {
+        const c = document.getElementById('weatherList');
+        if (!c) return;
+        if (!w || !w.length) { c.innerHTML = '<p>Clima estacional favorable.</p>'; return; }
+        c.innerHTML = w.map(row => `
+          <p style="margin-bottom:6px;"><strong>${row.region}:</strong> ${row.temp} · ${row.desc}</p>
+        `).join('');
+      },
+
+      renderTransports(tr) {
+        const c = document.getElementById('transportsList');
+        if (!c) return;
+        if (!tr || !tr.length) { c.innerHTML = '<p style="font-size:0.86rem; color:var(--muted);">Sin traslados complejos registrados.</p>'; return; }
+        c.innerHTML = tr.map(t => `
+          <div style="padding:8px 0; border-bottom:1px solid var(--border-subtle); font-size:0.86rem;">
+            <div style="font-weight:700; color:var(--primary);"><i class="fa-solid fa-route"></i> ${t.date}: ${t.title}</div>
+            <div style="color:var(--muted); font-size:0.8rem;">${t.desc}</div>
+          </div>
+        `).join('');
+      },
+
+      initMap() {
+        const d = window.__TRIP_DATA__;
+        const container = document.getElementById('mapContainer');
+        if (!d || !container) return;
+        if (this.map) {
+          this.map.invalidateSize();
+          return;
+        }
+
+        this.map = L.map('mapContainer').setView(d.mapCenter || [16.0, 107.0], d.mapZoom || 6);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+          maxZoom: 18,
+          attribution: '&copy; CARTO'
+        }).addTo(this.map);
+
+        const latLngs = [];
+        (d.days || []).forEach(day => {
+          if (day.lat && day.lng) {
+            latLngs.push([day.lat, day.lng]);
+            L.circleMarker([day.lat, day.lng], {
+              radius: 6,
+              fillColor: '#bd3126',
+              color: '#ffffff',
+              weight: 2,
+              fillOpacity: 1
+            }).addTo(this.map).bindPopup(`<b>Día ${day.day}: ${day.title}</b><br>${day.meta || ''}`);
+          }
+        });
+
+        if (latLngs.length > 1) {
+          L.polyline(latLngs, { color: '#2f5a38', weight: 3, dashArray: '6, 8' }).addTo(this.map);
+        }
+      },
+
+      renderItinerary(days) {
+        const c = document.getElementById('itineraryContainer');
+        if (!c) return;
+        c.innerHTML = (days || []).map((day, idx) => `
+          <div class="day-card searchable-card ${idx === 0 ? 'open' : ''}" data-search="${day.title} ${day.meta || ''} ${day.hotel || ''}">
+            <div class="day-header" onclick="this.parentElement.classList.toggle('open')">
+              <div style="display:flex; align-items:center; min-width:0;">
+                <span class="day-badge">${day.dateBadge || 'DÍA ' + day.day}</span>
+                <div class="day-title-wrap">
+                  <div class="day-title">
+                    Día ${day.day}: ${day.title}
+                    ${day.isSuggestion ? '<span class="suggestion-chip"><i class="fa-solid fa-sparkles"></i> Sugerencia</span>' : ''}
+                  </div>
+                  <div class="day-meta">${day.meta || ''}</div>
+                </div>
+              </div>
+              <i class="fa-solid fa-chevron-down day-chevron"></i>
+            </div>
+            <div class="day-body">
+              ${day.historyContext ? `<div class="history-box"><i class="fa-solid fa-landmark"></i> ${day.historyContext}</div>` : ''}
+              ${day.hotel ? `
+                <div class="hotel-subcard">
+                  <div style="font-weight:700; color:var(--secondary);"><i class="fa-solid fa-hotel"></i> ${day.hotel}</div>
+                  ${day.hotelAddress ? `<div style="font-size:0.8rem; color:var(--muted);">${day.hotelAddress}</div>` : ''}
+                  ${day.hotelMapsUrl ? `<a href="${day.hotelMapsUrl}" target="_blank" class="action-btn"><i class="fa-solid fa-map-location-dot"></i> Google Maps</a>` : ''}
+                </div>` : ''}
+              <ul class="clean-steps">
+                ${(day.steps || []).map(s => `<li>${s}</li>`).join('')}
+              </ul>
+              ${day.cultureTip ? `<div class="tip-card" style="border-left-color:var(--secondary);"><i class="fa-solid fa-eye"></i> <strong>Cultura:</strong> ${day.cultureTip}</div>` : ''}
+              ${day.practicalTip ? `<div class="tip-card"><i class="fa-solid fa-lightbulb"></i> <strong>Consejo:</strong> ${day.practicalTip}</div>` : ''}
+            </div>
+          </div>
+        `).join('');
+      },
+
+      toggleAllDays() {
+        this.allExpanded = !this.allExpanded;
+        document.querySelectorAll('.day-card').forEach(c => c.classList.toggle('open', this.allExpanded));
+      },
+
+      initCurrency(curr) {
+        if (!curr) return;
+        const rate = curr.rateToEUR || 1;
+        const lbl = document.getElementById('fxLabelLocal');
+        if (lbl) lbl.textContent = curr.code || 'LOCAL';
+        const locIn = document.getElementById('fxLocal');
+        const eurIn = document.getElementById('fxEur');
+
+        this.calcFxLocal = () => {
+          if (!locIn || !eurIn) return;
+          const val = parseFloat(locIn.value) || 0;
+          eurIn.value = (val / rate).toFixed(2);
+        };
+        this.calcFxEur = () => {
+          if (!locIn || !eurIn) return;
+          const val = parseFloat(eurIn.value) || 0;
+          locIn.value = Math.round(val * rate);
+        };
+
+        if (locIn) {
+          locIn.value = curr.quickChips?.[1] || 100000;
+          this.calcFxLocal();
+        }
+
+        const chipsContainer = document.getElementById('fxChips');
+        if (chipsContainer) {
+          chipsContainer.innerHTML = (curr.quickChips || []).map(chip => `
+            <span class="fx-chip" onclick="document.getElementById('fxLocal').value=${chip}; app.calcFxLocal();">${chip.toLocaleString()} ${curr.code}</span>
+          `).join('');
+        }
+      },
+
+      renderGourmet(gList) {
+        const c = document.getElementById('gourmetList');
+        if (!c || !gList) return;
+        c.innerHTML = gList.map((g, idx) => `
+          <div class="check-line" onclick="app.toggleCheck('gourmet', ${idx}, this, event)">
+            <input type="checkbox" id="chk-g-${idx}" onclick="event.stopPropagation(); app.toggleCheck('gourmet', ${idx}, this.parentElement, event)">
+            <label for="chk-g-${idx}" style="cursor:pointer; flex:1;">
+              <strong>${g.dish}</strong> ${g.city ? '(' + g.city + ')' : ''}: ${g.desc}
+              ${g.recommendedSpot ? '<span style="color:var(--primary); font-weight:700; display:block; font-size:0.78rem; margin-top:2px;"><i class="fa-solid fa-location-dot"></i> Recomendado: ' + g.recommendedSpot + '</span>' : ''}
+            </label>
+          </div>
+        `).join('');
+        this.calcProgress('gourmet');
+      },
+
+      renderCuriosities(cur) {
+        const c = document.getElementById('curiositiesList');
+        if (!c) return;
+        if (!cur || !cur.length) { c.style.display = 'none'; return; }
+        c.style.display = 'block';
+        c.innerHTML = cur.map(row => `
+          <div class="curiosity-card">
+            <h5><i class="fa-solid ${row.icon || 'fa-landmark'}"></i> ${row.title}</h5>
+            <p>${row.desc}</p>
+          </div>
+        `).join('');
+      },
+
+      renderEtiquette(etList) {
+        const c = document.getElementById('etiquetteList');
+        if (!c || !etList) return;
+        c.innerHTML = etList.map(e => `
+          <div class="check-box-group" style="margin-bottom:12px;">
+            <h3><i class="fa-solid ${e.icon || 'fa-handshake'}"></i> ${e.title}</h3>
+            <p style="font-size:0.86rem; color:var(--muted); line-height:1.45;">${e.desc}</p>
+          </div>
+        `).join('');
+      },
+
+      renderFlashcards(cards) {
+        const c = document.getElementById('fcGrid');
+        if (!c || !cards) return;
+        c.innerHTML = cards.map(fc => `
+          <div class="flashcard" onclick="app.openModal('${fc.category || ''}', '${fc.local}', '${fc.phonetic || ''}', '${fc.spanish}')">
+            <div style="font-size:0.75rem; font-weight:800; color:var(--muted);">${fc.category || 'Frase'}</div>
+            <div style="font-size:1.05rem; font-weight:800; color:var(--secondary); margin:4px 0;">${fc.local}</div>
+            <div style="font-family:var(--font-mono); font-size:0.75rem; color:var(--accent);">${fc.phonetic || ''}</div>
+            <div style="font-size:0.82rem; margin-top:2px;">${fc.spanish}</div>
+          </div>
+        `).join('');
+      },
+
+      openModal(cat, loc, pho, spa) {
+        document.getElementById('gModalCat').textContent = cat || 'COMUNICACIÓN';
+        document.getElementById('gModalLocal').textContent = loc;
+        document.getElementById('gModalPhonetic').textContent = pho;
+        document.getElementById('gModalSpanish').textContent = spa;
+        document.getElementById('giantModal').classList.add('active');
+      },
+
+      closeModal() {
+        document.getElementById('giantModal').classList.remove('active');
+      },
+
+      renderQuiz(quiz) {
+        const c = document.getElementById('quizContainer');
+        if (!c || !quiz || !quiz.length) return;
+        const scoreEl = document.getElementById('quizScoreText');
+        if (scoreEl) scoreEl.textContent = '0 / ' + quiz.length;
+        c.innerHTML = quiz.map((q, idx) => `
+          <div class="quiz-card" id="qcard-${idx}">
+            <div class="quiz-q">${idx + 1}. ${q.question}</div>
+            <div class="quiz-opts">
+              ${q.options.map((opt, oIdx) => `
+                <button class="quiz-btn" onclick="app.answerQuiz(${idx}, ${oIdx}, ${q.correct})">${opt}</button>
+              `).join('')}
+            </div>
+            <div class="quiz-exp" id="qexp-${idx}">${q.explanation}</div>
+          </div>
+        `).join('');
+      },
+
+      answerQuiz(qIdx, oIdx, correct) {
+        if (this.quizAnswered[qIdx]) return;
+        this.quizAnswered[qIdx] = true;
+
+        const card = document.getElementById('qcard-' + qIdx);
+        if (!card) return;
+        const btns = card.querySelectorAll('.quiz-btn');
+        const exp = document.getElementById('qexp-' + qIdx);
+
+        if (oIdx === correct) {
+          btns[oIdx].classList.add('correct');
+          this.quizScore++;
+        } else {
+          btns[oIdx].classList.add('wrong');
+          if (btns[correct]) btns[correct].classList.add('correct');
+        }
+        if (exp) exp.style.display = 'block';
+        const total = (window.__TRIP_DATA__.quiz || []).length;
+        const scoreEl = document.getElementById('quizScoreText');
+        if (scoreEl) scoreEl.textContent = this.quizScore + ' / ' + total;
+      },
+
+      renderPacking(pack) {
+        const c = document.getElementById('packingList');
+        if (!c || !pack) return;
+
+        // Cargar ítems personalizados guardados por el usuario
+        const tripKey = window.__TRIP_DATA__?.tripTitle || 'default';
+        const customItems = JSON.parse(localStorage.getItem('ches_custom_pack_' + tripKey) || '[]');
+        
+        // Agrupar elementos por categoría
+        const categories = {};
+        const allItems = [...pack, ...customItems];
+
+        const catIcons = {
+          'Documentación & Dinero': 'fa-passport',
+          'Documentación & Pagos': 'fa-passport',
+          'Salud & Botiquín': 'fa-kit-medical',
+          'Electrónica & Logística': 'fa-plug',
+          'Ropa & Calzado': 'fa-shirt',
+          'Ropa & Esenciales': 'fa-shirt',
+          'Personal': 'fa-user-tag'
+        };
+
+        allItems.forEach((p, idx) => {
+          const cat = typeof p === 'string' ? 'Esenciales' : (p.cat || 'Esenciales');
+          const text = typeof p === 'string' ? p : p.item;
+          if (!categories[cat]) categories[cat] = [];
+          categories[cat].push({ text, originalIdx: idx });
+        });
+
+        c.innerHTML = Object.keys(categories).map(catName => `
+          <div class="check-box-group" style="margin-bottom:14px;">
+            <h3><i class="fa-solid ${catIcons[catName] || 'fa-suitcase'}"></i> ${catName}</h3>
+            ${categories[catName].map(item => `
+              <div class="check-line" onclick="app.toggleCheck('packing', ${item.originalIdx}, this, event)">
+                <input type="checkbox" id="chk-p-${item.originalIdx}" onclick="event.stopPropagation(); app.toggleCheck('packing', ${item.originalIdx}, this.parentElement, event)">
+                <label for="chk-p-${item.originalIdx}" style="cursor:pointer; flex:1;">${item.text}</label>
+              </div>
+            `).join('')}
+          </div>
+        `).join('');
+
+        this.calcProgress('packing');
+      },
+
+      addCustomLuggage() {
+        const input = document.getElementById('newLuggageInput');
+        if (!input || !input.value.trim()) return;
+        const text = input.value.trim();
+        const tripKey = window.__TRIP_DATA__?.tripTitle || 'default';
+        const customItems = JSON.parse(localStorage.getItem('ches_custom_pack_' + tripKey) || '[]');
+        
+        customItems.push({ cat: 'Personal', item: text });
+        localStorage.setItem('ches_custom_pack_' + tripKey, JSON.stringify(customItems));
+        
+        input.value = '';
+        this.renderPacking(window.__TRIP_DATA__?.packing || []);
+        this.loadChecklistStates();
+      },
+
+      resetPacking() {
+        if (!confirm('¿Deseas desmarcar todos los elementos del equipaje?')) return;
+        const tripKey = window.__TRIP_DATA__?.tripTitle || 'default';
+        localStorage.removeItem('ches_packing_' + tripKey);
+        
+        document.querySelectorAll('#packingList input[type="checkbox"]').forEach(chk => {
+          chk.checked = false;
+          chk.closest('.check-line')?.classList.remove('checked-done');
+        });
+        this.calcProgress('packing');
+      },
+
+      renderSOS(em) {
+        const embassyEl = document.getElementById('sosEmbassy');
+        if (embassyEl && em) embassyEl.textContent = em.embassy || 'Consultar con el consulado general de tu país.';
+        const phonesEl = document.getElementById('sosPhones');
+        if (phonesEl && em) {
+          phonesEl.innerHTML = `
+            <p>• <strong>Policía:</strong> ${em.police || '112'} | • <strong>Ambulancia:</strong> ${em.ambulance || '112'}</p>
+            ${em.hospital ? `<p style="margin-top:6px;">• <strong>Hospital:</strong> ${em.hospital}</p>` : ''}
+          `;
+        }
+      },
+
+      toggleCheck(group, idx, lineEl, evt) {
+        const chk = lineEl.querySelector('input[type="checkbox"]');
+        if (chk && evt && evt.target !== chk) chk.checked = !chk.checked;
+        if (chk) lineEl.classList.toggle('checked-done', chk.checked);
+
+        const tripKey = window.__TRIP_DATA__?.tripTitle || 'default';
+        const stateKey = 'ches_' + group + '_' + tripKey;
+        const saved = JSON.parse(localStorage.getItem(stateKey) || '{}');
+        if (chk) saved[idx] = chk.checked;
+        localStorage.setItem(stateKey, JSON.stringify(saved));
+
+        this.calcProgress(group);
+      },
+
+      calcProgress(group) {
+        const container = document.getElementById(group === 'gourmet' ? 'gourmetList' : 'packingList');
+        if (!container) return;
+        const total = container.querySelectorAll('input[type="checkbox"]').length;
+        const done = container.querySelectorAll('input[type="checkbox"]:checked').length;
+        const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+
+        const lbl = document.getElementById(group === 'gourmet' ? 'gourmetLabel' : 'luggageLabel');
+        const bar = document.getElementById(group === 'gourmet' ? 'gourmetBar' : 'luggageBar');
+        if (lbl) lbl.textContent = done + ' / ' + total + ' (' + pct + '%)';
+        if (bar) bar.style.width = pct + '%';
+      },
+
+      loadChecklistStates() {
+        const tripKey = window.__TRIP_DATA__?.tripTitle || 'default';
+        ['gourmet', 'packing'].forEach(group => {
+          const stateKey = 'ches_' + group + '_' + tripKey;
+          const saved = JSON.parse(localStorage.getItem(stateKey) || '{}');
+          const prefix = group === 'gourmet' ? 'chk-g-' : 'chk-p-';
+          Object.keys(saved).forEach(idx => {
+            const chk = document.getElementById(prefix + idx);
+            if (chk && saved[idx]) {
+              chk.checked = true;
+              const parentLine = chk.closest('.check-line');
+              if (parentLine) parentLine.classList.add('checked-done');
+            }
+          });
+          this.calcProgress(group);
+        });
+      },
+
+      saveNotes() {
+        const d = window.__TRIP_DATA__;
+        const notesEl = document.getElementById('localNotes');
+        if (notesEl && d) {
+          localStorage.setItem('ches_notes_' + (d.tripTitle || 'v'), notesEl.value);
+        }
+      },
+
+      search(query) {
+        const q = (query || '').toLowerCase().trim();
+        document.querySelectorAll('.searchable-card').forEach(el => {
+          const text = (el.innerText + ' ' + (el.getAttribute('data-search') || '')).toLowerCase();
+          if (text.includes(q)) {
+            el.style.display = '';
+            if (q.length > 2) el.classList.add('open');
+          } else {
+            el.style.display = 'none';
+          }
+        });
+      }
+    };
+
+    window.addEventListener('DOMContentLoaded', () => {
+      app.init();
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js').catch(function() {});
+      }
+    });
+  </script>
+</body>
+</html>
