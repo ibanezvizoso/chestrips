@@ -1032,10 +1032,10 @@ const masterTemplateHtml = `<!DOCTYPE html>
         }
 
         this.map = L.map('mapContainer').setView(d.mapCenter || [16.0, 107.0], d.mapZoom || 6);
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-          maxZoom: 18,
-          attribution: '&copy; CARTO'
-        }).addTo(this.map);
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  maxZoom: 19,
+  attribution: '&copy; OpenStreetMap contributors'
+}).addTo(this.map);
 
         const latLngs = [];
         (d.days || []).forEach(day => {
